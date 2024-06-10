@@ -1,4 +1,4 @@
-# OFA_dataset
+# TAGLAS
 This repository collect multiple Text-attributed graph (TAG) dataset from multiple source and provide a unified way for preprocessing and loading. 
 We also provide a unified task generation pipeline for evaluating the performance of GNN/LLM on these datasets. 
 ## Statistics
@@ -127,9 +127,4 @@ For graph-level datasets:
 - `DefaultTextGPTask`: The default graph prediction task using the text node/edge/label features.
 - `GQATask`: Convert the graph prediction task to question answering format.
 
-#### Default tasks
-placeholder.
-### Subgraph tasks
-placeholder.
-### Question answering tasks.
 
