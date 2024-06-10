@@ -1,0 +1,2 @@
+from .collection import QATaskCollections
+
