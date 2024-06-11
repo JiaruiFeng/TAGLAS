@@ -1,15 +1,22 @@
 # TAGLAS
-This repository collect multiple Text-attributed graph (TAG) dataset from multiple source and provide a unified way for preprocessing and loading. 
-We also provide a unified task generation pipeline for evaluating the performance of GNN/LLM on these datasets. 
+This repository collects multiple Text-Attributed Graph (TAG) datasets from various sources and 
+provides a unified approach for preprocessing and loading. We also offer a standardized task 
+generation pipeline for evaluating the performance of GNN/LLM on these datasets. The project is 
+still under construction, so please expect more datasets and features in the future. Stay tuned!
+
+## 🔥News
+- *2024.06*: First version release.
+
+
 ## Statistics
-Here are currently support datasets:
+Here are currently included datasets:
 
 | Dataset (key)                 | Avg. #N | Avg. #E  | #G     | Task level | Task                           | Split (train/val/test)    | Domain          | description                                                    | Source                                                                                                                                                    |
 |-------------------------------|---------|----------|--------|------------|--------------------------------|---------------------------|-----------------|----------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Cora_node (cora)              | 2708    | 10556    | 1      | Node       | 7-way classification           | 140/500/2068              | Co-Citation     | Predict the category of papers.                                | [Graph-LLM](https://github.com/CurryTang/Graph-LLM), [OFA](https://github.com/LechengKong/OneForAll)                                                      |
-| Cora_link (cora)              | 2708    | 10556    | 1      | Link       | Binary classification          | 17944/1056/2112           | Co-Citation     | Predict whether two papers are co-cited by other papers.       | [Graph-LLM](https://github.com/CurryTang/Graph-LLM), [OFA](https://github.com/LechengKong/OneForAll)                                                      |
-| Pubmed_node (pubmed)          | 19717   | 88648    | 1      | Node       | 3-way classification           | 60/500/19157              | Co-Citation     | Predict the category of papers.                                | [Graph-LLM](https://github.com/CurryTang/Graph-LLM), [OFA](https://github.com/LechengKong/OneForAll)                                                      |
-| Pubmed_link (pubmed)          | 19717   | 88468    | 1      | Link       | Binary classification          | 150700/8866/17730         | Co-Citation     | Predict whether two papers are co-cited by other papers.       | [Graph-LLM](https://github.com/CurryTang/Graph-LLM), [OFA](https://github.com/LechengKong/OneForAll)                                                      |
+| Cora_node (cora_node)         | 2708    | 10556    | 1      | Node       | 7-way classification           | 140/500/2068              | Co-Citation     | Predict the category of papers.                                | [Graph-LLM](https://github.com/CurryTang/Graph-LLM), [OFA](https://github.com/LechengKong/OneForAll)                                                      |
+| Cora_link (cora_link)         | 2708    | 10556    | 1      | Link       | Binary classification          | 17944/1056/2112           | Co-Citation     | Predict whether two papers are co-cited by other papers.       | [Graph-LLM](https://github.com/CurryTang/Graph-LLM), [OFA](https://github.com/LechengKong/OneForAll)                                                      |
+| Pubmed_node (pubmed_node)     | 19717   | 88648    | 1      | Node       | 3-way classification           | 60/500/19157              | Co-Citation     | Predict the category of papers.                                | [Graph-LLM](https://github.com/CurryTang/Graph-LLM), [OFA](https://github.com/LechengKong/OneForAll)                                                      |
+| Pubmed_link (pubmed_link)     | 19717   | 88468    | 1      | Link       | Binary classification          | 150700/8866/17730         | Co-Citation     | Predict whether two papers are co-cited by other papers.       | [Graph-LLM](https://github.com/CurryTang/Graph-LLM), [OFA](https://github.com/LechengKong/OneForAll)                                                      |
 | Arxiv (arxiv)                 | 169343  | 1166243  | 1      | Node       | 40-way classification          | 90941/29799/48603         | Citation        | Predict the category of papers.                                | [OGB](https://ogb.stanford.edu/), [OFA](https://github.com/LechengKong/OneForAll)                                                                         |
 | WikiCS (wikics)               | 11701   | 216123   | 1      | Node       | 10-way classification          | 580/1769/5847             | Wiki page       | Predict the category of wiki pages.                            | [PyG](https://pytorch-geometric.readthedocs.io/en/latest/generated/torch_geometric.datasets.WikiCS.html), [OFA](https://github.com/LechengKong/OneForAll) |
 | Product-subset (products)     | 54025   | 144638   | 1      | Node       | 47-way classification          | 14695/1567/36982          | Co-purchase     | Predict the category of products.                              | [TAPE](https://github.com/XiaoxinHe/TAPE)                                                                                                                 |
@@ -39,33 +46,44 @@ PyG>=2.3
 datasets
 torch>=2.0.1
 transformers>=4.36.2
+huggingface_hub
 rdkit
 ```
 
+## Installation
+You can directly clone the repository into your wokring project by:
+```
+git clone https://github.com/JiaruiFeng/TAGLAS.git
+```
+We will provide more user-friendly installation way in the future. 
+
 ## Usage
-### Load dataset
-Use the key of dataset to load the dataset. The key of dataset can be founded in the above table. For example, to load Arxiv dataset:
+### Datasets
+#### Load datasets
+The basic way to load a dataset is to use the key of dataset. The key of dataset can be founded in the above table. For example, to load Arxiv dataset:
 ```python
-from TAGLAS import get_datasets
-dataset = get_datasets("arxiv")
+from TAGLAS import get_dataset
+dataset = get_dataset("arxiv")
 ```
 Or, you can load multiple datasets at the same time:
 ```python
+from TAGLAS import get_datasets
 dataset_list = get_datasets(["arxiv", "pcba"])
 ```
-By default, all data are be saved in the `TAGDataset` folder in the root working directory.
+By default, all data are be saved in the `./TAGDataset` directory of the repository directory.
 If you want to change the data path, you can set the `root` parameter when loading the dataset:
 ```python
+from TAGLAS import get_datasets
 dataset_list = get_datasets(["arxiv", "pcba"], root="your_path")
 ```
-The above function will load dataset in the default way, which is suitable for the most of cases. However, some datasets may have
-advanced setting. To have further control over the loading, you can also load dataset by:
+The above function will load dataset in the default way, which is suitable for the most of the cases. 
+However, some datasets may have additional arguments. To have further control over the loading, you can also load dataset by:
 ```python
-from TAGLAS.datasets import FB15K237
-fb15k237 = FB15K237(root="your_path", to_undirected=False)
+from TAGLAS import get_dataset
+dataset = get_dataset("fb15k237", to_undirected=False)
 ```
-### Data key description
-The most of datasets contain the following keys:
+#### Data key description and basic usage
+Most of the datasets contain the following keys:
 - `x`: Text feature for all nodes. Usually a `list` or `np.ndarray`.
 - `node_map`: A mapping from node index to node text feature. Usually a `torch.LongTensor`.
 - `edge_attr`: Text feature for all edges. Usually a `list` or `np.ndarray`.
@@ -80,51 +98,106 @@ Some dataset may also contain:
 
 To get a specific key:
 ```python
-dataset = get_datasets("arxiv")
+from TAGLAS import get_dataset
+dataset = get_dataset("arxiv")
 x = dataset.x
 ```
 
-All data samples are stored in the dataset with class 'TAGData', which is inherited from 'Data' in 'torch_geometric' package. To get a single graph sample:
+All data samples are stored in the dataset with class 'TAGData', which is inherited from 'Data' class in 'torch_geometric' package. To get a single graph sample:
 ```python
-dataset = get_datasets("arxiv")
+from TAGLAS import get_dataset
+dataset = get_dataset("arxiv")
 data = dataset[0]
 ```
-For graph-level datasets, each `data` sample will only contains mapping key like `node_map` or `edge_map` but no real text features. The reason is that,
-to minimize the memory usage and avoid saving repeat node/edge text features, all text features are stored in a mapping style. To get the text features, you can use the mapping key to get the text features:
+#### Feature mapping
+For graph-level datasets, all `_map` keys like `node_map` or `edge_map` will store the mapping to the global feature of 
+all data sample. The global features can be accessed by:
 ```python
-# To get the edge text features for data 0.
+from TAGLAS import get_dataset
+dataset = get_dataset("hiv")
+# Get the global node text features.
+dataset.x 
+# Get the global edge text features.
+dataset.edge_attr
+```
+The feature for each sample can be mapped by:
+```python
+from TAGLAS import get_dataset
+dataset = get_dataset("hiv")
+# Global node text features
+x = dataset.x
 data = dataset[0]
-edge_attr = dataset.edge_attr[data.edge_map]
-# To get the label text features for data 0.
-label = dataset.label[data.label_map]
-
+# Get node text feature for sample 0 by the global node_map key of the sample 0.
+data_x = [x[i] for i in data.node_map]
+# We also provide direct access to the text feature of each sample by:
+data_x = dataset[0].x
 ```
-You can also get the text features directly from the dataset by calling `get` function:
-```python
-data = dataset.get(0)
-edge_attr = data.edge_attr
-```
-Notes that for node-level and link-level datasets, the text features are also included in the data sample, as these datasets only contains a single graph.
+The reason we store the feature in this way is to avoid the repeated text features, 
+especially for large dataset will only few unique text features (like molecule datasets). 
 
 
-
-### Load tasks
-In this repository, we provide a unified way to generate tasks based on datasets. Currently, we support the following tasks:
+### Tasks
+#### Supported tasks
+In this repository, we provide a unified way to generate tasks based on datasets. Currently, we support the following five task types:
 For node-level datasets:
-- `DefaultNPTask`: The default node prediction task which return the whole graph as a single sample and use the original node/edge/label features. Usually used for running baseline GNN.
-- `SubgraphNPTask`: Extract subgraph for each data sample and use the original node/edge/label features.
-- `SubgraphTextNPTask`: Extract subgraph for each data sample and use the text node/edge/label features.
-- `NQATask`: Extract subgraph for each data sample and convert the task to question answering format.
+- `default`: The `default` task directly use the most common way used in the graph community for node/edge/graph-level tasks. Specifically it returns the whole original graph for node/edge level tasks and original graph sample for graph-level tasks. Meanwhile, it will use the node/edge features from the original source if the dataset have and generate identical feature otherwise. The type is mainly used for debug and baseline evaluation.
+- `default_text`: The logic of `default_text` tasks is the same as `default` except that all features are replaced with text feature. Meanwhile, we also support to convert all text features to sentence embedding.
+- `subgraph`: The `subgraph` task will convert node/edge-level tasks into subgraph-based. Namely, for the target node/edge, it will sample a subgraph around the target. Same to the `defualt` task, it use the original node/edge features.
+- `subgraph_text`: The logic of `subgraph_text` tasks is the same as `subgrapg` except that all features are replaced with text feature.
+- `QA`: The `QA` task will convert all prediction into question-answering format. a `question` and `answer` key will be included in each sample. In default, the `QA` tasks will sample subgraph for node/edge-level tasks. 
 
-For link-level datasets:
-- `DefaultLPTask`: The default link prediction task which return the whole graph as a single sample and use the original node/edge/label features. . Usually used for running baseline GNN.
-- `SubgraphLPTask`: Extract subgraph for each data sample and use the original node/edge/label features.
-- `SubgraphTextLPTask`: Extract subgraph for each data sample and use the text node/edge/label features.
-- `LQATask`: Extract subgraph for each data sample and convert the task to question answering format.
+#### Load tasks
+To load a specific task, simply call:
+```python
+from TAGLAS import get_task
+# Load default node-level task on cora
+task = get_task("cora_node", "default")
+# Load subgraph_text edge-level task on pubmed and val split
+task = get_task("pubmed_link", "subgraph_text", split="val")
+```
+Similarly, you can load multiple task at the same time:
+```python
+from TAGLAS import get_tasks
+# Load QA tasks on all datasets.
+tasks = get_tasks(["cora_node", "arxiv", "wn18rr", "scene_graph"], "QA")
+# Specify task type for each dataset.
+tasks = get_tasks(["cora_node", "arxiv"], ["QA", "subgraph_text"])
+```
+In defualt, all generated task will not be saved. For fast loading and repeat experiments, you can also save and load the generated tasks by:
+```python
+from TAGLAS import get_task
+# save_data will save the generated task into corresponding folder. load_saved will try to load the saved task first before generate new task.
+arxiv_task = get_task("arxiv", "subgraph_text", split="test", save_data=True, load_saved=True)
+# In defualt, the saved task file will be named by used important arguments (like split, hop...). You can also specify it by yourself:
+arxiv_task = get_task("arxiv", "subgraph_text", split="test", save_data=True, load_saved=True, save_name="your_name")
+```
+#### Convert text feature to sentence embedding
+For `default_text`, `subgraph_text`, and `QA` task types, we also provide interface to convert raw text feature to sentence embedding:
+```python
+from TAGLAS import get_task
+from TAGLAS.tasks.text_encoder import SentenceEncoder
+encoder_name = "ST"
+encoder = SentenceEncoder(encoder_name)
+arxiv_task = get_task("arxiv", "subgraph_text", split="test")
+arxiv_task.convert_text_to_embedding(encoder_name, encoder)
+```
+In TAGLAS, we implement several commonly used LLMs for sentence embedding, including `ST`: sentence transformer; `BERT`: vanilla BERT; `e5`: E5, `llama2_7b`: Llama2-7b; `llama2_13b`: Llama2-13b. You can load different model by input different model_key to `SentenceEncoder`. 
+Meanwhile, you can also implement your own sentence embedding model. As long as it has `__call__` function to convert input text list to embedding.
 
-For graph-level datasets:
-- `DefaultGPTask`: The default graph prediction task using the original node/edge/label features. Usually used for running baseline GNN.
-- `DefaultTextGPTask`: The default graph prediction task using the text node/edge/label features.
-- `GQATask`: Convert the graph prediction task to question answering format.
+### Evaluation
+For each dataset and task, we provide default evaluation tool for performance evaluation based on `torchmetric`. Specifically, for each dataset, we support two type of evaluation based on its supported task types.
+- `default`: Used for all task types except `QA`. It supports evaluation based on tensor output, which is commonly used.
+- `QA`: It supports evaluation based on text output.
 
-
+To get a evaluator for certain task, simply call:
+```python
+from TAGLAS import get_evaluator, get_evaluators
+# Get default evaluator for cora_node task. metric_name is a string indicate the name of metric.
+metric_name, evaluator = get_evaluator("cora_node", "subgraph_text")
+# Get QA evaluator for arxiv
+metric_name, evaluator = get_evaluator("arxiv", "QA")
+# Get evaluator for multiple input tasks.
+metric_name_list, evaluator_list = get_evaluators(["cora_node", "arxiv"], "QA")
+```
+## Issues and Bugs
+The project is still undergoing. If you find issues/bugs when use it, feel free to open an issue in the Github repository. 
