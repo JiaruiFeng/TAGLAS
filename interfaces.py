@@ -250,6 +250,20 @@ DATASET_INFOR_DICT = {
                 "evaluation": {"default": ("accuracy", {"metric_name": "accuracy", "num_classes": 153}),
                                "QA": ("text_accuracy", {"metric_name": "text_accuracy"})},
                 },
+    "expla_graph": {"dataset": "expla_graph",
+            "task": {"default_text": DefaultTextGPTask,
+                     "QA": GQATask},
+            "evaluation": {"default": ("accuracy", {"metric_name": "accuracy", "num_classes": 2}),
+                            "QA": ("text_accuracy", {"metric_name": "text_accuracy"})},
+            },
+    "scene_graph": {"dataset": "scene_graph",
+                    "task": {"QA": GQATask},
+                    "evaluation": {"QA": ("text_accuracy", {"metric_name": "text_accuracy"})},
+                    },
+    "ultrachat200k": {"dataset": "ultrachat200k",
+                    "task": {"QA": GQATask},
+                    "evaluation": {"QA": ("text_accuracy", {"metric_name": "text_accuracy"})},
+                    },
 }
 
 
@@ -280,6 +294,7 @@ def get_datasets(names: Union[str, list[str]],
 def get_task(
         name: str,
         task_type: Optional[str] = "default",
+        split: Optional[str] = "train",
         root: Optional[str] = None,
         transform: Optional[Callable] = None,
         pre_transform: Optional[Callable] = None,
@@ -290,7 +305,7 @@ def get_task(
         avaliable_tasks = ', '.join(list(DATASET_INFOR_DICT[name]["task"].keys()))
         raise ValueError(f"The task type {task_type} is not supported for dataset {name}. "
                          f"The supported task types are {avaliable_tasks}")
-    return DATASET_INFOR_DICT[name]["task"][task_type](dataset, **kwargs)
+    return DATASET_INFOR_DICT[name]["task"][task_type](dataset, split, **kwargs)
 
 
 def get_tasks(names: Union[str, list[str]],

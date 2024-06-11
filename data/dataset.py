@@ -13,6 +13,8 @@ from torch_geometric.data import InMemoryDataset
 
 from TAGLAS.constants import ROOT
 from .data import TAGData
+from copy import deepcopy as c
+import numpy as np
 
 
 class TAGDataset(InMemoryDataset, ABC):
@@ -42,6 +44,39 @@ class TAGDataset(InMemoryDataset, ABC):
         self.data, self.slices = torch.load(self.processed_paths[0])
         self.data = self._data.text_input_to_list()
         self.side_data = torch.load(self.processed_paths[1])
+
+
+
+    def __getitem__(self, item):
+        data = super(TAGDataset, self).__getitem__(item)
+        missed_key = []
+        for key in ["x", "edge_attr", "label"]:
+            if key not in data:
+                missed_key.append(key)
+        if len(missed_key) == 0:
+            return data
+
+        data = c(data)
+        update_dict = {}
+        for key in missed_key:
+            if key not in self._data:
+                continue
+            features = getattr(self, key)
+            features = np.array(features, dtype=object)
+
+            if key == "x":
+                x = np.squeeze(features[[data.node_map]])
+                update_dict["x"] = x.tolist()
+            elif key == "edge_attr":
+                edge_attr = np.squeeze(features[[data.edge_map]])
+                update_dict["edge_attr"] = edge_attr.tolist()
+            else:
+                label = np.squeeze(features[[data.label_map]])
+                update_dict["label"] = label.tolist()
+
+        data.update(update_dict)
+        return data
+
 
     @property
     def raw_file_names(self) -> list:

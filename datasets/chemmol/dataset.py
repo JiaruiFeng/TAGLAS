@@ -68,7 +68,7 @@ class Chembl(TAGDataset):
 
         return [d for d in pyg_graph], side_data
 
-    def __process_label_features__(self, answer_features: list[str]):
+    def __process_label_features__(self, answer_features: list[str]) -> list:
         labels = []
         answers = answer_features
         if self.sub_name in ["esol", "freesolv", "lipo"]:
@@ -78,7 +78,7 @@ class Chembl(TAGDataset):
                 "lipo": 308,
             }
             for i in range(len(answers)):
-                labels.append(answers[i][prefix_dict[self.sub_name]:])
+                labels.append(answers[i][prefix_dict[self.sub_name]:].strip())
         elif self.sub_name == "molproperties":
             labels = answer_features
         else:

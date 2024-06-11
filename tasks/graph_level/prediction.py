@@ -66,9 +66,10 @@ class DefaultGPTask(DefaultTask):
                        edge_map=edge_map)
 
     def __before_build_dataset__(self, sample_index: int):
-        edge_index = self.dataset[sample_index].edge_index
-        node_map = self.dataset[sample_index].node_map
-        edge_map = self.dataset[sample_index].edge_map
+        data = self.dataset[sample_index]
+        edge_index = data.edge_index
+        node_map = data.node_map
+        edge_map = data.edge_map
         return edge_index, node_map, edge_map
 
     def __build_task__(self):
@@ -120,9 +121,10 @@ class DefaultTextGPTask(DefaultTextTask):
                        edge_map=edge_map)
 
     def __before_build_dataset__(self, sample_index: int):
-        edge_index = self.dataset[sample_index].edge_index
-        node_map = self.dataset[sample_index].node_map
-        edge_map = self.dataset[sample_index].edge_map
+        data = self.dataset[sample_index]
+        edge_index = data.edge_index
+        node_map = data.node_map
+        edge_map = data.edge_map
         return edge_index, node_map, edge_map
 
     def __build_task__(self):
