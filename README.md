@@ -51,39 +51,41 @@ rdkit
 ```
 
 ## Installation
-You can directly clone the repository into your wokring project by:
+You can directly clone the repository into your working project by using the following command:
 ```
 git clone https://github.com/JiaruiFeng/TAGLAS.git
 ```
-We will provide more user-friendly installation way in the future. 
+We will provide a more user-friendly installation method in the future.
 
 ## Usage
 ### Datasets
 #### Load datasets
-The basic way to load a dataset is to use the key of dataset. The key of dataset can be founded in the above table. For example, to load Arxiv dataset:
+The basic way to load a dataset is by using its key. The dataset key can be found in the table above. For example, to load the Arxiv dataset:
 ```python
 from TAGLAS import get_dataset
 dataset = get_dataset("arxiv")
 ```
-Or, you can load multiple datasets at the same time:
+You can also load multiple datasets at the same time:
 ```python
 from TAGLAS import get_datasets
 dataset_list = get_datasets(["arxiv", "pcba"])
 ```
-By default, all data are be saved in the `./TAGDataset` directory of the repository directory.
+By default, all data files are be saved in the `./TAGDataset` directory root in the repository directory.
 If you want to change the data path, you can set the `root` parameter when loading the dataset:
 ```python
 from TAGLAS import get_datasets
 dataset_list = get_datasets(["arxiv", "pcba"], root="your_path")
 ```
-The above function will load dataset in the default way, which is suitable for the most of the cases. 
-However, some datasets may have additional arguments. To have further control over the loading, you can also load dataset by:
+The above function will load the dataset in the default way, which is suitable for most cases. However, 
+some datasets may have additional arguments. To have further control over the loading process, you can 
+also load the dataset by directly add additional arguments:
 ```python
 from TAGLAS import get_dataset
 dataset = get_dataset("fb15k237", to_undirected=False)
 ```
 #### Data key description and basic usage
-Most of the datasets contain the following keys:
+All data samples are stored in the dataset with class 'TAGData', which is inherited from 'Data' class in 
+'torch_geometric' package. Different information will be stored in different key. Most datasets contain the following keys:
 - `x`: Text feature for all nodes. Usually a `list` or `np.ndarray`.
 - `node_map`: A mapping from node index to node text feature. Usually a `torch.LongTensor`.
 - `edge_attr`: Text feature for all edges. Usually a `list` or `np.ndarray`.
@@ -92,23 +94,26 @@ Most of the datasets contain the following keys:
 - `label_map`: A mapping from label index to label text feature. Usually a `torch.LongTensor`.
 - `edge_index`: The graph structure. Usually a `torch.LongTensor`.
 
-Some dataset may also contain:
-- `x_original`: The vector feature for all nodes in the original data source. Usually a `torch.Tensor`.
-- `edge_attr_orignal`: The vector feature for all edges in the original data source. Usually a `torch.Tensor`.
+Some datasets may also contain:
+- `x_original`: The vector feature of all nodes in the original data source. Usually a `torch.Tensor`.
+- `edge_attr_orignal`: The vector feature of all edges in the original data source. Usually a `torch.Tensor`.
+- `question`: Text feature of question for the QA tasks.
+- `question_map`: A mapping from question index to question text feature.
+- `answer`: Text feature of answer for the QA tasks.
+- `answer_map`: A mapping from answer index to answer text feature.
 
-To get a specific key:
+Here is a simple demonstration:
 ```python
 from TAGLAS import get_dataset
 dataset = get_dataset("arxiv")
+# Get node text feature for the whole dataset.
 x = dataset.x
+# Get the first graph sample in the dataset.
+data = dataset[0]
+# Get edge text feature for the sample.
+edge_attr = data.edge_attr
 ```
 
-All data samples are stored in the dataset with class 'TAGData', which is inherited from 'Data' class in 'torch_geometric' package. To get a single graph sample:
-```python
-from TAGLAS import get_dataset
-dataset = get_dataset("arxiv")
-data = dataset[0]
-```
 #### Feature mapping
 For graph-level datasets, all `_map` keys like `node_map` or `edge_map` will store the mapping to the global feature of 
 all data sample. The global features can be accessed by:
@@ -120,7 +125,7 @@ dataset.x
 # Get the global edge text features.
 dataset.edge_attr
 ```
-The feature for each sample can be mapped by:
+The feature for a specific sample can be obtained by:
 ```python
 from TAGLAS import get_dataset
 dataset = get_dataset("hiv")
@@ -128,23 +133,23 @@ dataset = get_dataset("hiv")
 x = dataset.x
 data = dataset[0]
 # Get node text feature for sample 0 by the global node_map key of the sample 0.
-data_x = [x[i] for i in data.node_map]
+sample_x = [x[i] for i in data.node_map]
 # We also provide direct access to the text feature of each sample by:
-data_x = dataset[0].x
+sample_x = dataset[0].x
 ```
-The reason we store the feature in this way is to avoid the repeated text features, 
-especially for large dataset will only few unique text features (like molecule datasets). 
+For node/edge-level datasets, since they contain only one graph, the local map is also the global map, 
+and the logic remains the same. The reason we store the features this way is to avoid repeated text features, 
+especially for large datasets with only a few unique text features (like molecule datasets).
 
 
 ### Tasks
 #### Supported tasks
 In this repository, we provide a unified way to generate tasks based on datasets. Currently, we support the following five task types:
-For node-level datasets:
-- `default`: The `default` task directly use the most common way used in the graph community for node/edge/graph-level tasks. Specifically it returns the whole original graph for node/edge level tasks and original graph sample for graph-level tasks. Meanwhile, it will use the node/edge features from the original source if the dataset have and generate identical feature otherwise. The type is mainly used for debug and baseline evaluation.
-- `default_text`: The logic of `default_text` tasks is the same as `default` except that all features are replaced with text feature. Meanwhile, we also support to convert all text features to sentence embedding.
-- `subgraph`: The `subgraph` task will convert node/edge-level tasks into subgraph-based. Namely, for the target node/edge, it will sample a subgraph around the target. Same to the `defualt` task, it use the original node/edge features.
-- `subgraph_text`: The logic of `subgraph_text` tasks is the same as `subgrapg` except that all features are replaced with text feature.
-- `QA`: The `QA` task will convert all prediction into question-answering format. a `question` and `answer` key will be included in each sample. In default, the `QA` tasks will sample subgraph for node/edge-level tasks. 
+- `default`: The `default` task implements the most common methods used in the graph community for node, edge, and graph-level tasks. Specifically, it returns the entire original graph for node and edge-level tasks and an original graph sample for graph-level tasks. Additionally, it uses the node and edge features from the original source if available; otherwise, it generates identical features. This type is mainly used for debugging and baseline evaluation.
+- `default_text`: The logic of `default_text` tasks is the same as `default`, except that all features are replaced with text features. Additionally, we support converting all text features to sentence embeddings.
+- `subgraph`:The subgraph task converts node and edge-level tasks into subgraph-based tasks. Specifically, for the target node or edge, it will sample a subgraph around the target. Similar to the default task, it uses the original node and edge features.
+- `subgraph_text`: The logic of `subgraph_text` tasks is the same as `subgraph` except that all features are replaced with text features.
+- `QA`: The QA task converts all tasks into a question-answering format. Each sample will include a question and an answer key. By default, the QA tasks will sample subgraphs for node and edge-level tasks.
 
 #### Load tasks
 To load a specific task, simply call:
@@ -163,7 +168,7 @@ tasks = get_tasks(["cora_node", "arxiv", "wn18rr", "scene_graph"], "QA")
 # Specify task type for each dataset.
 tasks = get_tasks(["cora_node", "arxiv"], ["QA", "subgraph_text"])
 ```
-In defualt, all generated task will not be saved. For fast loading and repeat experiments, you can also save and load the generated tasks by:
+By default, all generated tasks will not be saved. For fast loading and repeat experiments, you can save and load the generated tasks by:
 ```python
 from TAGLAS import get_task
 # save_data will save the generated task into corresponding folder. load_saved will try to load the saved task first before generate new task.
@@ -172,7 +177,7 @@ arxiv_task = get_task("arxiv", "subgraph_text", split="test", save_data=True, lo
 arxiv_task = get_task("arxiv", "subgraph_text", split="test", save_data=True, load_saved=True, save_name="your_name")
 ```
 #### Convert text feature to sentence embedding
-For `default_text`, `subgraph_text`, and `QA` task types, we also provide interface to convert raw text feature to sentence embedding:
+For `default_text`, `subgraph_text`, and `QA` task types, we also provide function to convert raw text feature to sentence embedding:
 ```python
 from TAGLAS import get_task
 from TAGLAS.tasks.text_encoder import SentenceEncoder
@@ -181,15 +186,41 @@ encoder = SentenceEncoder(encoder_name)
 arxiv_task = get_task("arxiv", "subgraph_text", split="test")
 arxiv_task.convert_text_to_embedding(encoder_name, encoder)
 ```
-In TAGLAS, we implement several commonly used LLMs for sentence embedding, including `ST`: sentence transformer; `BERT`: vanilla BERT; `e5`: E5, `llama2_7b`: Llama2-7b; `llama2_13b`: Llama2-13b. You can load different model by input different model_key to `SentenceEncoder`. 
-Meanwhile, you can also implement your own sentence embedding model. As long as it has `__call__` function to convert input text list to embedding.
+In TAGLAS, we implement several commonly used LLMs for sentence embedding, including `ST` (Sentence Transformer), 
+`BERT` (vanilla BERT), `e5` (E5), `llama2_7b` (Llama2-7b), and `llama2_13b` (Llama2-13b). You can load different 
+models by inputting the respective `model_key` into `SentenceEncoder`. Additionally, you can implement your own 
+sentence embedding model as long as it has a `__call__` function to convert input text lists into embeddings.
+
+#### Collate
+For all tasks in TAGLAS, we provide a unified collcate function. Specifically, call the collate function by:
+```python
+from TAGLAS import get_task
+arxiv_task = get_task("arxiv", "subgraph_text", split="test")
+# Call collate function to get a batch of data
+batch = arxiv_task.collate([arxiv_task[i] for i in range(16)])
+```
+The collate function is implemented based on `torch_geometric.loader.dataloader.Collater`. However, there 
+is a major difference. For all text feature keys like `x` and `edge_attr`, it only stores the unique text 
+features in the batch. Additionally, all `_map` keys store the map from the corresponding unique text 
+features in the batch to all elements.
+```python
+from TAGLAS import get_task
+arxiv_task = get_task("arxiv", "subgraph_text", split="test")
+batch = arxiv_task.collate([arxiv_task[i] for i in range(16)])
+# to get node text features for all nodes in the batch
+x = batch.x[batch.node_map]
+# to get edge text features for all edges in the batch
+edge_attr = batch.edge_attr[batch.edge_map]
+```
+In this way, the batch data is more memory and computation efficient, as each unique text only needs to be encoded once.
 
 ### Evaluation
-For each dataset and task, we provide default evaluation tool for performance evaluation based on `torchmetric`. Specifically, for each dataset, we support two type of evaluation based on its supported task types.
+"For each dataset and task, we provide a default evaluation tool for performance evaluation based on `torchmetric`. 
+Specifically, for each dataset, we support two types of evaluation based on its supported task types."
 - `default`: Used for all task types except `QA`. It supports evaluation based on tensor output, which is commonly used.
 - `QA`: It supports evaluation based on text output.
 
-To get a evaluator for certain task, simply call:
+To get an evaluator for a certain task, simply call:
 ```python
 from TAGLAS import get_evaluator, get_evaluators
 # Get default evaluator for cora_node task. metric_name is a string indicate the name of metric.
@@ -200,4 +231,4 @@ metric_name, evaluator = get_evaluator("arxiv", "QA")
 metric_name_list, evaluator_list = get_evaluators(["cora_node", "arxiv"], "QA")
 ```
 ## Issues and Bugs
-The project is still undergoing. If you find issues/bugs when use it, feel free to open an issue in the Github repository. 
+The project is still in development. If you encounter any issues or bugs while using it, please feel free to open an issue in the GitHub repository.
