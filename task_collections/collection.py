@@ -15,7 +15,7 @@ from TAGLAS.tasks.base import QATask
 
 
 class QATaskCollections():
-    r"""Task collection class to combine multiple different Questiona answering tasks together for training and inference.
+    r"""Task collection class to combine multiple different question answering tasks together for training and inference.
         Currently, only support QA based tasks.
     """
 
@@ -73,15 +73,6 @@ class QATaskCollections():
     def __len__(self):
         return np.sum(self.aug_sizes)
 
-    def batch_unique_feature(self, features: Union[Tensor, np.ndarray]):
-        if isinstance(features, Tensor):
-            # If feature is tensor, don't need to generate unique feature and feature map.
-            unique_feature = features
-            feature_map = torch.arange(features.size(0), dtype=torch.long).to(unique_feature.device)
-        else:
-            unique_feature, feature_map = np.unique(features, return_inverse=True)
-            feature_map = torch.from_numpy(feature_map).long()
-        return unique_feature, feature_map
 
     def collate(self, batch: list[TAGData]):
         return self.tasks[0].collate(batch)

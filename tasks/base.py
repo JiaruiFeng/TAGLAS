@@ -227,14 +227,7 @@ class BaseTask(Dataset, ABC):
         if self.filter_func is not None:
             keep_indexs = [self.filter_func(data) for data in self.data_list]
             self.data_list = [self.data_list[i] for i, keep in enumerate(keep_indexs) if keep]
-        if self.post_funcs is not None:
-            if isinstance(self.post_funcs, types.FunctionType):
-                post_funcs = [self.post_funcs]
-            else:
-                assert isinstance(self.post_funcs, list)
-                post_funcs = self.post_funcs
-            for post_func in post_funcs:
-                self.data_list = [post_func(data) for data in self.data_list]
+
 
     def __before_build_task__(self):
         """Overwrite and implement this function if additional process is needed before __build_task__ start.
@@ -286,7 +279,15 @@ class BaseTask(Dataset, ABC):
         data.label = self.label_features[label_map]
         if self.edge_features is not None:
             data.edge_attr = self.edge_features[edge_map]
-
+        data.graph_description = self.graph_description
+        if self.post_funcs is not None:
+            if isinstance(self.post_funcs, types.FunctionType):
+                post_funcs = [self.post_funcs]
+            else:
+                assert isinstance(self.post_funcs, list)
+                post_funcs = self.post_funcs
+            for post_func in post_funcs:
+                data = post_func(data)
         return data
 
     def batch_unique_feature(self, features: Union[Tensor, np.ndarray, list]):
@@ -821,7 +822,15 @@ class QATask(SubgraphTextTask):
             data.edge_attr = self.edge_features[edge_map]
         data.question = self.question_features[question_map]
         data.answer = self.answer_features[answer_map]
-
+        data.graph_description = self.graph_description
+        if self.post_funcs is not None:
+            if isinstance(self.post_funcs, types.FunctionType):
+                post_funcs = [self.post_funcs]
+            else:
+                assert isinstance(self.post_funcs, list)
+                post_funcs = self.post_funcs
+            for post_func in post_funcs:
+                data = post_func(data)
         return data
 
     def collate(self, batch: list[TAGData], remap_keys: list[str] = ["node", "edge", "label", "question", "answer"]):

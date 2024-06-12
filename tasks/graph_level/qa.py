@@ -1,4 +1,5 @@
 from copy import deepcopy as c
+import types
 from typing import (
     Union,
     Any,
@@ -82,6 +83,15 @@ class GQATask(DefaultTextGPTask):
         data.label = self.label_features[label_map]
         data.question = self.question_features[question_map]
         data.answer = self.answer_features[answer_map]
+        data.graph_description = self.graph_description
+        if self.post_funcs is not None:
+            if isinstance(self.post_funcs, types.FunctionType):
+                post_funcs = [self.post_funcs]
+            else:
+                assert isinstance(self.post_funcs, list)
+                post_funcs = self.post_funcs
+            for post_func in post_funcs:
+                data = post_func(data)
         return data
 
     def collate(self, batch: list[TAGData], remap_keys: list[str] = ["node", "edge", "label", "question", "answer"]):
