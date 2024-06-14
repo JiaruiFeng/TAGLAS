@@ -181,8 +181,8 @@ def get_raw_dataset(name, raw_dir):
 
 def gen_graph(graphs, name):
     for g in graphs:
-        g["node_feat"] = ["Chemical atom: " + t for t in g["node_feat"]]
-        g["edge_feat"] = ["Chemical bond between two atoms: " + t for t in g["edge_feat"]]
+        g["node_feat"] = ["Chemical atom with the following information: " + t for t in g["node_feat"]]
+        g["edge_feat"] = ["Chemical bond between two atoms with the following information: " + t for t in g["edge_feat"]]
 
 
     node_texts = []
