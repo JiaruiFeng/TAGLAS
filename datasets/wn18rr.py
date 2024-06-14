@@ -44,7 +44,7 @@ class WN18RR(TAGDataset):
         num_edges = edge_index.size(-1)
         num_edge_type = len(edge_attr)
         edge_index = torch.cat([edge_index, torch.stack([edge_index[1], edge_index[0]])], dim=-1)
-        edge_attr = edge_attr + [("Relation from source entity to target entity: "
+        edge_attr = edge_attr + [("Relation from source word to target word: "
                                   "The inverse relation of ") + label for label in labels]
         edge_attr_original = torch.cat([edge_attr_original, torch.arange(num_edge_type, num_edge_type * 2)], dim=-1)
         edge_map = torch.cat([edge_map, edge_map + num_edge_type], dim=-1)
