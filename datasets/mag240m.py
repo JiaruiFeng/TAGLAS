@@ -179,7 +179,7 @@ class MAG240M(TAGDataset):
 
         del label_text_list
         gc.collect()
-        edge_attr = ["Connected two papers have citation relationship."]
+        edge_attr = ["Connected two papers have a citation relationship."]
         torch.save(edge_attr, self.processed_paths[2], pickle_protocol=4)
 
         meta_data = torch.load(self.raw_paths[0])

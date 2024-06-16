@@ -84,7 +84,7 @@ class Arxiv(TAGDataset):
 
         edge_index = torch.from_numpy(edge).long()
         # edge text
-        edge_text_lst = ["The connected two papers have citation relationship."]
+        edge_text_lst = ["The connected two papers have a citation relationship."]
         edge_index, _ = safe_to_undirected(edge_index)
         num_edges = edge_index.size(-1)
         edge_map = torch.zeros([num_edges], dtype=torch.long)

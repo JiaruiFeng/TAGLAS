@@ -42,6 +42,8 @@ DATASET_TO_CLASS_DICT = {
 }
 
 DATASET_INFOR_DICT = {
+    "cora": {"dataset": "cora"},
+    "pubmed": {"dataset": "pubmed"},
     "cora_node": {"dataset": "cora",
                   "task": {"default": DefaultNPTask,
                            "subgraph": SubgraphNPTask,

@@ -90,11 +90,11 @@ class ML1M(TAGDataset):
         )
 
         movie_texts = []
-        movie_prefix = "Movie. "
+        movie_prefix = "Movie with title and genre. "
         for i in range(movie_df.shape[0]):
             title = movie_df.iloc[i]['title']
             genres = movie_df.iloc[i]['genres']
-            movie_texts.append(movie_prefix + "Title: " + title + ". Genres: " + genres)
+            movie_texts.append(movie_prefix + "Title: " + title + ". Genre: " + genres)
         num_of_movie = len(movie_texts)
         movie_mapping = {idx: i for i, idx in enumerate(movie_df.index)}
 
