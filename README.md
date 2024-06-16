@@ -83,9 +83,14 @@ also load the dataset by directly add additional arguments:
 from TAGLAS import get_dataset
 dataset = get_dataset("fb15k237", to_undirected=False)
 ```
+Finally, directly import from the dataset class is also supported:
+```python
+from TAGLAS.datasets import Arxiv
+dataset = Arxiv()
+```
 #### Data key description and basic usage
-All data samples are stored in the dataset with class 'TAGData', which is inherited from 'Data' class in 
-'torch_geometric' package. Different information will be stored in different key. Most datasets contain the following keys:
+All data samples are stored in the dataset with class `TAGData`, which is inherited from `Data` class in 
+[`torch_geometric`](https://github.com/pyg-team/pytorch_geometric/blob/master/torch_geometric/data/data.py#L471) package. Different information will be stored in different key. Most datasets contain the following keys:
 - `x`: Text feature for all nodes. Usually a `list` or `np.ndarray`.
 - `node_map`: A mapping from node index to node text feature. Usually a `torch.LongTensor`.
 - `edge_attr`: Text feature for all edges. Usually a `list` or `np.ndarray`.
@@ -175,6 +180,15 @@ from TAGLAS import get_task
 arxiv_task = get_task("arxiv", "subgraph_text", split="test", save_data=True, load_saved=True)
 # In defualt, the saved task file will be named by used important arguments (like split, hop...). You can also specify it by yourself:
 arxiv_task = get_task("arxiv", "subgraph_text", split="test", save_data=True, load_saved=True, save_name="your_name")
+```
+Directly construct task given dataset is also supported:
+Finally, directly import from the dataset class is also supported:
+```python
+from TAGLAS.datasets import Arxiv
+from TAGLAS.tasks import SubgraphTextNPTask
+dataset = Arxiv()
+# Load subgraph_text node-level task on Arxiv dataset.
+task = SubgraphTextNPTask(dataset)
 ```
 #### Convert text feature to sentence embedding
 For `default_text`, `subgraph_text`, and `QA` task types, we also provide function to convert raw text feature to sentence embedding:
