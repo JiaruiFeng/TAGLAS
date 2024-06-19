@@ -83,8 +83,7 @@ class BaseTask(Dataset, ABC):
             if self.save_data:
                 self.save_task()
         self.__after_process__()
-        # remove original dataset for saving space.
-        self.dataset = None
+        # remove intermediate data for saving space.
         self.data = None
         self.side_data = None
         self.sample_indexs = None
