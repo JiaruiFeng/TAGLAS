@@ -6,7 +6,7 @@ from typing import (
 
 import torch
 from torch import Tensor, LongTensor
-
+from TAGLAS.utils.dataset import get_split_data
 from TAGLAS.data import TAGData, TAGDataset
 from ..base import DefaultTask, DefaultTextTask
 from ..process import value_to_tensor, parallel_build_sample_process
@@ -18,7 +18,7 @@ def default_labels(dataset: TAGDataset, split: str) -> tuple[LongTensor, Tensor,
         dataset (TAGDataset): Dataset which implement the get_GP_indexs_labels function.
         split (str): Dataset split.
     """
-    sample_indexs, sample_labels, sample_label_maps = dataset.get_GP_indexs_labels(split)
+    sample_indexs, sample_labels, sample_label_maps = get_split_data(split, dataset.get_GP_indexs_labels)
     return sample_indexs, sample_labels, sample_label_maps,
 
 

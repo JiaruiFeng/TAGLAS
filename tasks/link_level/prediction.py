@@ -5,7 +5,7 @@ from typing import (
 import numpy as np
 from scipy.sparse import csr_array
 from torch import Tensor, LongTensor
-
+from TAGLAS.utils.dataset import get_split_data
 from TAGLAS.data import TAGDataset
 from ..base import SubgraphTask, DefaultTask, DefaultTextTask, SubgraphTextTask
 from ..process import subgraph_process
@@ -17,7 +17,7 @@ def default_labels(dataset: TAGDataset, split: str) -> tuple[LongTensor, Tensor,
         dataset (TAGDataset): Dataset which implement the get_LP_indexs_labels function.
         split (str): Dataset split.
     """
-    sample_indexs, sample_labels, sample_label_maps = dataset.get_LP_indexs_labels(split)
+    sample_indexs, sample_labels, sample_label_maps = get_split_data(split, dataset.get_LP_indexs_labels)
     return sample_indexs, sample_labels, sample_label_maps
 
 

@@ -8,7 +8,7 @@ from typing import (
 
 import torch
 from torch import Tensor, LongTensor
-
+from TAGLAS.utils.dataset import get_split_data
 from TAGLAS.data import TAGData, TAGDataset
 from .prediction import DefaultTextGPTask
 from ..process import value_to_tensor
@@ -23,7 +23,7 @@ def default_text_labels(dataset: TAGDataset, split: str, **kwargs) -> tuple[Long
         kwargs: Other arguments.
     """
 
-    sample_indexs, sample_labels, sample_label_maps = dataset.get_GQA_indexs_labels(split)
+    sample_indexs, sample_labels, sample_label_maps = get_split_data(split, dataset.get_GQA_indexs_labels)
     sample_label_maps, q_list, a_list = dataset.get_GQA_list(sample_label_maps, indexs=sample_indexs, **kwargs)
     return sample_indexs, sample_labels, sample_label_maps, q_list, a_list
 

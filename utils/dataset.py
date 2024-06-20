@@ -1,6 +1,7 @@
 from random import shuffle, randint
 from typing import (
     Union,
+    Callable
 )
 
 import numpy as np
@@ -100,3 +101,20 @@ def sample_k_labels_with_true(
     label_sample_list.insert(randint(0, way), true_label)
     shuffle(label_sample_list)
     return label_sample_list
+
+def get_split_data(split: str, split_func: Callable):
+    if split == "all":
+        splits = ["train", "val", "test"]
+        sample_indexs = []
+        sample_labels = []
+        sample_label_maps = []
+        for split in splits:
+            indexs, labels, label_maps = split_func(split)
+            sample_indexs.append(indexs)
+            sample_labels.append(labels)
+            sample_label_maps.extend(label_maps)
+        sample_indexs = torch.cat(sample_indexs, dim=0)
+        sample_labels = torch.cat(sample_labels, dim=0)
+    else:
+        sample_indexs, sample_labels, sample_label_maps = split_func(split)
+    return sample_indexs, sample_labels, sample_label_maps

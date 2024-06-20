@@ -1,7 +1,7 @@
 from ..base import QATask
 from TAGLAS.data import TAGDataset
 from torch import LongTensor, Tensor
-
+from TAGLAS.utils.dataset import get_split_data
 
 
 def default_text_labels(dataset: TAGDataset, split: str, **kwargs) -> tuple[LongTensor, Tensor, list, list, list]:
@@ -13,7 +13,7 @@ def default_text_labels(dataset: TAGDataset, split: str, **kwargs) -> tuple[Long
         kwargs: Other arguments.
     """
 
-    sample_indexs, sample_labels, sample_label_maps = dataset.get_NP_indexs_labels(split)
+    sample_indexs, sample_labels, sample_label_maps = get_split_data(split, dataset.get_NP_indexs_labels)
     sample_label_maps, q_list, a_list = dataset.get_NQA_list(sample_label_maps, **kwargs)
     return sample_indexs, sample_labels, sample_label_maps, q_list, a_list
 
