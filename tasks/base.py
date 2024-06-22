@@ -36,6 +36,9 @@ class BaseTask(Dataset, ABC):
         from_saved (bool, optional): If true, try to load saved task from disk if it exists.
         save_name (str, optional): If given, use the given name in saving instead of default one.
         post_funcs (Union[Callable, list[Callable]], optional): User defined post-processing functions.
+            All post_funcs must have two inputs: data and task_class. data is a single task sample and task_class will
+            directly input the task instance into the post_func such that the post_func and obtain all information in
+            the task instance.
         filter_func (Callable, optional): User defined sample filter function.
     """
 
@@ -286,7 +289,7 @@ class BaseTask(Dataset, ABC):
                 assert isinstance(self.post_funcs, list)
                 post_funcs = self.post_funcs
             for post_func in post_funcs:
-                data = post_func(data)
+                data = post_func(data, task_class=self)
         return data
 
     def batch_unique_feature(self, features: Union[Tensor, np.ndarray, list]):
@@ -365,6 +368,9 @@ class DefaultTask(BaseTask):
         from_saved (bool, optional): If True, try to load saved task instead of regeneration.
         save_name (str, optional): If given, use the given name in saving instead of the default one.
         post_funcs (Union[Callable, list[Callable]], optional): User defined post-processing functions.
+            All post_funcs must have two inputs: data and task_class. data is a single task sample and task_class will
+            directly input the task instance into the post_func such that the post_func and obtain all information in
+            the task instance.
         filter_func (Callable, optional): User defined sample filter function.
         sampling_size (Union[float, int, list], optional): If specified, will do the sampling before generate task.
             if given a float value and value < 1, do the down-sampling, otherwise, do the up-sampling. If value equal to 1.0,
@@ -575,6 +581,9 @@ class SubgraphTask(DefaultTask):
         from_saved (bool, optional): If True, try to load saved task instead of regeneration.
         save_name (str, optional): If given, use the given name in saving instead of the default one.
         post_funcs (Union[Callable, list[Callable]], optional): User defined post-processing functions.
+            All post_funcs must have two inputs: data and task_class. data is a single task sample and task_class will
+            directly input the task instance into the post_func such that the post_func and obtain all information in
+            the task instance.
         filter_func (Callable, optional): User defined sample filter function.
         sampling_size (Union[float, int, list], optional): If specified, will do the sampling before generate task.
             if given a float value and value < 1, do the down-sampling, otherwise, do the up-sampling. If value equal to 1.0,
