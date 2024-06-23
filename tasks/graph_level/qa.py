@@ -77,12 +77,12 @@ class GQATask(DefaultTextGPTask):
         question_map = data.question_map
         answer_map = data.answer_map
 
-        data.x = self.node_features[node_map]
+        data.x = self.node_features[node_map.numpy()]
         if self.edge_features is not None:
-            data.edge_attr = self.edge_features[edge_map]
-        data.label = self.label_features[label_map]
-        data.question = self.question_features[question_map]
-        data.answer = self.answer_features[answer_map]
+            data.edge_attr = self.edge_features[edge_map.numpy()]
+        data.label = self.label_features[label_map.numpy()]
+        data.question = self.question_features[question_map.numpy()]
+        data.answer = self.answer_features[answer_map.numpy()]
         if self.post_funcs is not None:
             if isinstance(self.post_funcs, types.FunctionType):
                 post_funcs = [self.post_funcs]
