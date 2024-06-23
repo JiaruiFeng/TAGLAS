@@ -83,7 +83,6 @@ class GQATask(DefaultTextGPTask):
         data.label = self.label_features[label_map]
         data.question = self.question_features[question_map]
         data.answer = self.answer_features[answer_map]
-        data.graph_description = self.graph_description
         if self.post_funcs is not None:
             if isinstance(self.post_funcs, types.FunctionType):
                 post_funcs = [self.post_funcs]

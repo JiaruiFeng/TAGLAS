@@ -18,7 +18,7 @@ def default_text_labels(dataset: TAGDataset, split: str, **kwargs) -> tuple[Long
         split (str): Dataset split.
         kwargs: Other arguments.
     """
-    sample_indexs, sample_labels, sample_label_maps = get_split_data(split, dataset.get_LP_indexs_label)
+    sample_indexs, sample_labels, sample_label_maps = get_split_data(split, dataset.get_LP_indexs_labels)
     sample_label_maps, q_list, a_list = dataset.get_LQA_list(sample_label_maps, **kwargs)
     return sample_indexs, sample_labels, sample_label_maps, q_list, a_list
 

@@ -57,7 +57,6 @@ class BaseTask(Dataset, ABC):
         self.split = split
         self.save_data = save_data
         self.data = dataset._data
-        self.graph_description = dataset.graph_description
         self.side_data = dataset.side_data
         self.save_name = save_name
         self.base_collater = Collater(None, None)
@@ -281,7 +280,6 @@ class BaseTask(Dataset, ABC):
         data.label = self.label_features[label_map]
         if self.edge_features is not None:
             data.edge_attr = self.edge_features[edge_map]
-        data.graph_description = self.graph_description
         if self.post_funcs is not None:
             if isinstance(self.post_funcs, types.FunctionType):
                 post_funcs = [self.post_funcs]
@@ -830,7 +828,6 @@ class QATask(SubgraphTextTask):
             data.edge_attr = self.edge_features[edge_map]
         data.question = self.question_features[question_map]
         data.answer = self.answer_features[answer_map]
-        data.graph_description = self.graph_description
         if self.post_funcs is not None:
             if isinstance(self.post_funcs, types.FunctionType):
                 post_funcs = [self.post_funcs]
