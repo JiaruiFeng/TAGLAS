@@ -835,7 +835,7 @@ class QATask(SubgraphTextTask):
                 assert isinstance(self.post_funcs, list)
                 post_funcs = self.post_funcs
             for post_func in post_funcs:
-                data = post_func(data)
+                data = post_func(data, task_class=self)
         return data
 
     def collate(self, batch: list[TAGData], remap_keys: list[str] = ["node", "edge", "label", "question", "answer"]):
