@@ -51,7 +51,7 @@ def download_hf_file(repo_id,
                      ):
 
     hf_hub_download(repo_id=repo_id, subfolder=subfolder, filename=filename, repo_type=repo_type,
-                    local_dir=local_dir, local_dir_use_symlinks=False, cache_dir=cache_dir)
+                    local_dir=local_dir, local_dir_use_symlinks=False, cache_dir=cache_dir, force_download=True)
     if subfolder is not None:
         shutil.move(osp.join(local_dir, subfolder, filename), osp.join(local_dir, filename))
         shutil.rmtree(osp.join(local_dir, subfolder))
