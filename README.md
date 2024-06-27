@@ -1,7 +1,8 @@
 # TAGLAS
 This repository collects multiple Text-Attributed Graph (TAG) datasets from various sources and 
 provides a unified approach for preprocessing and loading. We also offer a standardized task 
-generation pipeline for evaluating the performance of GNN/LLM on these datasets. The project is 
+generation pipeline for evaluating the performance of GNN/LLM on these datasets. Technical report of 
+the TAGLAS is available in [arxiv](https://arxiv.org/abs/2406.14683). The project is 
 still under construction, so please expect more datasets and features in the future. Stay tuned!
 
 ## 🔥News
@@ -244,5 +245,21 @@ metric_name, evaluator = get_evaluator("arxiv", "QA")
 # Get evaluator for multiple input tasks.
 metric_name_list, evaluator_list = get_evaluators(["cora_node", "arxiv"], "QA")
 ```
+
 ## Issues and Bugs
 The project is still in development. If you encounter any issues or bugs while using it, please feel free to open an issue in the GitHub repository.
+
+
+## Cite
+If you found the TAGLAS helpful in your project, consider cite it! Thank you!
+```
+@misc{taglas,
+      title={TAGLAS: An atlas of text-attributed graph datasets in the era of large graph and language models}, 
+      author={Jiarui Feng and Hao Liu and Lecheng Kong and Yixin Chen and Muhan Zhang},
+      year={2024},
+      eprint={2406.14683},
+      archivePrefix={arXiv},
+      primaryClass={cs.LG},
+      url={https://arxiv.org/abs/2406.14683}, 
+}
+```
