@@ -1,7 +1,8 @@
 from random import shuffle, randint
 from typing import (
     Union,
-    Callable
+    Callable,
+    Optional,
 )
 
 import numpy as np
@@ -50,7 +51,7 @@ def generate_link_split(edge_index: LongTensor, train_ratio: float = 0.85, test_
 
 def generate_sample_split(
         num_samples: int,
-        label_map: Tensor = None,
+        label_map: Optional[Tensor] = None,
         train_ratio: float = 0.7,
         test_ratio: float = 0.2) -> dict:
     """Random split all samples into train/val/test sets. Used if there is no existing split for the given dataset.

@@ -8,7 +8,7 @@ class MultiApr(Metric):
     Args:
         num_labels (int): Number of binary labels.
     """
-    def __init__(self, num_labels: int=1, **kwargs):
+    def __init__(self, num_labels: int = 1, **kwargs):
         super().__init__()
         self.metrics = torch.nn.ModuleList([AveragePrecision(task="binary") for _ in range(num_labels)])
 
@@ -40,7 +40,7 @@ class MultiAuc(Metric):
     Args:
         num_labels (int): Number of binary labels.
     """
-    def __init__(self, num_labels=1, **kwargs):
+    def __init__(self, num_labels: int = 1, **kwargs):
         super().__init__()
         self.metrics = torch.nn.ModuleList([AUROC(task="binary") for _ in range(num_labels)])
 

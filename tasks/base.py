@@ -45,9 +45,9 @@ class BaseTask(Dataset, ABC):
     def __init__(
             self,
             dataset: TAGDataset,
-            split: Optional[str] = "train",
-            save_data: Optional[bool] = False,
-            from_saved: Optional[bool] = False,
+            split: str = "train",
+            save_data: bool = False,
+            from_saved: bool = False,
             save_name: Optional[str] = None,
             post_funcs: Optional[Union[Callable, list[Callable]]] = None,
             filter_func: Optional[Callable] = None,
@@ -380,14 +380,14 @@ class DefaultTask(BaseTask):
     def __init__(
             self,
             dataset: TAGDataset,
-            split: Optional[str] = "train",
-            save_data: Optional[bool] = False,
-            from_saved: Optional[bool] = False,
+            split: str = "train",
+            save_data: bool = False,
+            from_saved: bool = False,
             save_name: Optional[str] = None,
             post_funcs: Optional[Union[Callable, list[Callable]]] = None,
             filter_func: Optional[Callable] = None,
-            sample_size: Optional[Union[float, int, list]] = 1.0,
-            sample_mode: Optional[str] = "random",
+            sample_size: Union[float, int, list] = 1.0,
+            sample_mode: str = "random",
             **kwargs) -> None:
         self.sample_size = sample_size
         self.sample_mode = sample_mode
@@ -599,17 +599,17 @@ class SubgraphTask(DefaultTask):
     def __init__(
             self,
             dataset: TAGDataset,
-            split: Optional[str] = "train",
-            save_data: Optional[bool] = False,
-            from_saved: Optional[bool] = False,
+            split: str = "train",
+            save_data: bool = False,
+            from_saved: bool = False,
             save_name: Optional[str] = None,
             post_funcs: Optional[Union[Callable, list[Callable]]] = None,
             filter_func: Optional[Callable] = None,
-            sample_size: Optional[Union[float, int, list]] = 1.0,
-            sample_mode: Optional[str] = "random",
-            hop: Optional[int] = 3,
-            max_nodes_per_hop: Optional[int] = 5,
-            num_workers: Optional[int] = 0,
+            sample_size: Union[float, int, list] = 1.0,
+            sample_mode: str = "random",
+            hop: int = 3,
+            max_nodes_per_hop: int = 5,
+            num_workers: int = 0,
             to_sparse: bool = True,
             **kwargs) -> None:
         self.hop = hop
@@ -680,8 +680,8 @@ class TextBase():
             encoder_name: str,
             text_features: Union[list, np.ndarray],
             name: str,
-            encoder: Optional[Any] = None,
-            from_saved: Optional[bool] = True) -> Tensor:
+            encoder: Any = None,
+            from_saved: bool = True) -> Tensor:
         """Convert text to embedding. If there is saved embedding, directly load it. Otherwise, use the input encoder
         to generate and save it.
         Args:
@@ -707,7 +707,7 @@ class TextBase():
             encoder_name: str,
             encoder: Any = None,
             convert_features: list[str] = ["node", "edge", "label"],
-            from_saved: Optional[bool] = True) -> None:
+            from_saved: bool = True) -> None:
         """Convert all features in convert_features to embedding.
         Args:
             encoder_name (str): Name of the encoder. It is also the key map to the saved embedding.
@@ -750,7 +750,7 @@ class DefaultTextTask(DefaultTask, TextBase):
     def convert_text_to_embedding(
             self,
             encoder_name: str,
-            encoder: Optional[Any] = None,
+            encoder: Any = None,
             convert_features: Optional[list[str]] = ["node", "edge", "label"],
             from_saved: Optional[bool] = True) -> None:
         return self.__convert_text_to_embedding__(encoder_name, encoder, convert_features, from_saved)
@@ -773,7 +773,7 @@ class SubgraphTextTask(SubgraphTask, TextBase):
             encoder_name: str,
             encoder: Any = None,
             convert_features: list[str] = ["node", "edge", "label"],
-            from_saved: Optional[bool] = True) -> None:
+            from_saved: bool = True) -> None:
         return self.__convert_text_to_embedding__(encoder_name, encoder, convert_features, from_saved)
 
 
@@ -809,9 +809,9 @@ class QATask(SubgraphTextTask):
     def convert_text_to_embedding(
             self,
             encoder_name: str,
-            encoder: Optional[Any] = None,
+            encoder: Any = None,
             convert_features: list[str] = ["node", "edge", "label", "question", "answer"],
-            from_saved: Optional[bool] = True, ) -> None:
+            from_saved: bool = True, ) -> None:
         return self.__convert_text_to_embedding__(encoder_name, encoder, convert_features, from_saved)
 
     def __getitem__(self, item: int) -> Any:

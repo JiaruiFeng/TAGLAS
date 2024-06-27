@@ -29,15 +29,15 @@ class DefaultGPTask(DefaultTask):
     def __init__(
             self,
             dataset: TAGDataset,
-            split: Optional[str] = "train",
-            save_data: Optional[bool] = False,
-            from_saved: Optional[bool] = False,
+            split: str = "train",
+            save_data: bool = False,
+            from_saved: bool = False,
             save_name: Optional[str] = None,
             post_funcs: Optional[Union[Callable, list[Callable]]] = None,
             filter_func: Optional[Callable] = None,
-            sample_size: Optional[Union[float, int, list]] = 1.0,
-            sample_mode: Optional[str] = "random",
-            num_workers: Optional[int] = 0,
+            sample_size: Union[float, int, list] = 1.0,
+            sample_mode: str = "random",
+            num_workers: int = 0,
             **kwargs) -> None:
         self.num_workers = num_workers
         super().__init__(dataset, split, save_data, from_saved, save_name, post_funcs, filter_func, sample_size, sample_mode,
@@ -84,15 +84,15 @@ class DefaultTextGPTask(DefaultTextTask):
     def __init__(
             self,
             dataset: TAGDataset,
-            split: Optional[str] = "train",
-            save_data: Optional[bool] = False,
-            from_saved: Optional[bool] = False,
+            split: str = "train",
+            save_data: bool = False,
+            from_saved: bool = False,
             save_name: Optional[str] = None,
             post_funcs: Optional[Union[Callable, list[Callable]]] = None,
             filter_func: Optional[Callable] = None,
-            sample_size: Optional[Union[float, int, list]] = 1.0,
-            sample_mode: Optional[str] = "random",
-            num_workers: Optional[int] = 0,
+            sample_size: Union[float, int, list] = 1.0,
+            sample_mode: str = "random",
+            num_workers: int = 0,
             **kwargs) -> None:
         self.num_workers = num_workers
         super().__init__(dataset, split, save_data, from_saved, save_name, post_funcs, filter_func, sample_size, sample_mode,

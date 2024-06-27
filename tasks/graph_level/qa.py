@@ -65,8 +65,8 @@ class GQATask(DefaultTextGPTask):
             self,
             encoder_name: str,
             encoder: Optional[Any] = None,
-            convert_features: Optional[list[str]] = ["node", "edge", "label", "question", "answer"],
-            from_saved: Optional[bool] = True) -> None:
+            convert_features: list[str] = ["node", "edge", "label", "question", "answer"],
+            from_saved: bool = True) -> None:
         return self.__convert_text_to_embedding__(encoder_name, encoder, convert_features, from_saved)
 
     def __getitem__(self, item):

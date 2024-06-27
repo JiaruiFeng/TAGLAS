@@ -295,8 +295,8 @@ def get_datasets(names: Union[str, list[str]],
 
 def get_task(
         name: str,
-        task_type: Optional[str] = "default",
-        split: Optional[str] = "train",
+        task_type: str = "default",
+        split: str = "train",
         root: Optional[str] = None,
         transform: Optional[Callable] = None,
         pre_transform: Optional[Callable] = None,
@@ -311,7 +311,7 @@ def get_task(
 
 
 def get_tasks(names: Union[str, list[str]],
-              task_types: Optional[Union[str, list[str]]] = "default",
+              task_types: Union[str, list[str]] = "default",
               root: Optional[str] = None,
               transform: Optional[Callable] = None,
               pre_transform: Optional[Callable] = None,
@@ -327,7 +327,7 @@ def get_tasks(names: Union[str, list[str]],
 
 
 def get_evaluator(name: str,
-                  task_type: Optional[str] = "default") -> tuple[str, Metric]:
+                  task_type: str = "default") -> tuple[str, Metric]:
     task_type = "QA" if task_type == "QA" else "default"
     if task_type not in DATASET_INFOR_DICT[name]["evaluation"].keys():
         avaliable_evaluation = ', '.join(list(DATASET_INFOR_DICT[name]["evaluation"].keys()))
@@ -337,7 +337,7 @@ def get_evaluator(name: str,
     return metric_name, Evaluator(**evaluator_args)
 
 
-def get_evaluators(names: Union[str, list[str]], task_types: Optional[Union[str, list[str]]] = "default") \
+def get_evaluators(names: Union[str, list[str]], task_types: Union[str, list[str]] = "default") \
         -> tuple[list[str], list[Metric]]:
     if isinstance(names, str):
         names = [names]

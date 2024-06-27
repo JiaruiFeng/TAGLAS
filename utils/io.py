@@ -59,12 +59,12 @@ def download_hf_file(repo_id,
 
 
 
-def maybe_log(path, log=True):
+def maybe_log(path: str, log=True):
     if log:
         print('Extracting', path)
 
 
-def extract_zip(path, folder, log=True):
+def extract_zip(path: str, folder: str, log: bool = True):
     r"""Extracts a zip archive to a specific folder.
     Args:
         path (string): The path to the tar archive.
@@ -77,7 +77,7 @@ def extract_zip(path, folder, log=True):
         f.extractall(folder)
 
 
-def move_files_in_dir(source_dir, target_dir):
+def move_files_in_dir(source_dir: str, target_dir: str):
     # gather all files
     allfiles = os.listdir(source_dir)
 
@@ -102,10 +102,10 @@ def delete_folder(folder_dir: str):
         print(f"{folder_dir} not exist.")
 
 
-def delete_processed_files(root: Optional[str]=ROOT,
+def delete_processed_files(root: str=ROOT,
                            datasets: Optional[Union[str, list[str]]]=None,
-                           delete_processed: Optional[bool]=True,
-                           delete_raw: Optional[bool]=False):
+                           delete_processed: bool=True,
+                           delete_raw: bool=False):
     if datasets is None:
         datasets = os.listdir(root)
     else:

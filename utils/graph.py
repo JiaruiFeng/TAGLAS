@@ -14,8 +14,8 @@ from torch_sparse import SparseTensor, coalesce
 
 def edge_index_to_csr_adj(
         edge_index: Tensor,
-        num_nodes: int = None,
-        edge_attr: Tensor = None, ) -> csr_array:
+        num_nodes: Optional[int] = None,
+        edge_attr: Optional[Tensor] = None, ) -> csr_array:
     num_nodes = maybe_num_nodes(edge_index, num_nodes)
     if edge_attr is None:
         values = torch.ones(len(edge_index[0]))
@@ -27,7 +27,11 @@ def edge_index_to_csr_adj(
                     shape=(num_nodes, num_nodes), )
     return adj
 
-def edge_index_to_sparse_csr(edge_index, edge_attr=None, num_nodes=None, bidirectional=False):
+def edge_index_to_sparse_csr(
+        edge_index: LongTensor,
+        edge_attr: Optional[Tensor] = None,
+        num_nodes: Optional[int] = None,
+        bidirectional: bool = False) -> SparseTensor:
     N = int(edge_index.max() + 1) if num_nodes is None else num_nodes
     if edge_attr is None:
         edge_attr = torch.arange(edge_index.size(1))
@@ -45,7 +49,7 @@ def edge_index_to_sparse_csr(edge_index, edge_attr=None, num_nodes=None, bidirec
 
 def safe_to_undirected(
         edge_index: LongTensor,
-        edge_attr: Tensor = None):
+        edge_attr: Optional[Tensor] = None):
     if is_undirected(edge_index, edge_attr):
         return edge_index, edge_attr
     else:
@@ -56,7 +60,7 @@ def sample_k_hop_subgraph_sparse(
     node_idx: Union[int, list[int], Tensor],
     num_hops: int,
     edge_index: SparseTensor,
-    max_nodes_per_hop=-1,
+    max_nodes_per_hop: int = -1,
 ):
     if isinstance(node_idx, int):
         node_idx = torch.tensor([node_idx])

@@ -33,7 +33,7 @@ class LQATask(QATask):
         self.answer_features = a_list
         return sample_indexs, sample_labels, sample_label_maps
 
-    def __remove_link__(self, row, col, target_index):
+    def __remove_link__(self, row: LongTensor, col: LongTensor, target_index: LongTensor):
         i, j = target_index
         remove_ind = np.logical_or(np.logical_and(row == i, col == j), np.logical_and(row == j, col == i), )
         keep_ind = np.logical_not(remove_ind).bool()

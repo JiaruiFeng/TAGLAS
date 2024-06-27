@@ -38,7 +38,7 @@ def feature_embedding_process(
         texts: Union[list[Any], np.ndarray],
         encoder: Any = None,
         file_name: str = None,
-        from_saved: Optional[bool] = True) -> Tensor:
+        from_saved: bool = True) -> Tensor:
     """Convert input text features into embedding using the given encoder and save the generated embedding.
     Args:
         texts (Union[list[Any], np.ndarray]): Collection of texts. Can be list or np.ndarray,
@@ -70,7 +70,7 @@ def subgraph_process(
         edge_map: LongTensor,
         hop: int = 3,
         max_nodes_per_hop: int = -1,
-        num_nodes: int = None,
+        num_nodes: Optional[int] = None,
         to_sparse: bool = True) -> tuple[LongTensor, LongTensor, LongTensor, LongTensor]:
     """generate subgraph for the input node index.
     """
@@ -86,7 +86,7 @@ def subgraph_process(
     return processed_edge_index, processed_node_map, processed_edge_map, mapping
 
 
-def value_to_tensor(value, to_long=True):
+def value_to_tensor(value: Any, to_long=True):
     r"""Util function to convert all input to tensor and do the uplifting of dimension for 0-dimension tensor.
     """
     if value is None:
@@ -113,7 +113,7 @@ class MultiprocessHelper(Dataset):
         graph_level(bool, optional): If true, assume the given task is for graph-level.
     """
 
-    def __init__(self, task: Any, graph_level: Optional[bool] = False):
+    def __init__(self, task: Any, graph_level: bool = False):
         self.task = task
         self.sample_labels = task.sample_labels
         self.sample_indexs = task.sample_indexs
@@ -139,7 +139,7 @@ class MultiprocessHelper(Dataset):
         return self.sample_indexs.size(0)
 
 
-def parallel_build_sample_process(task: Any, graph_level: Optional[bool] = False):
+def parallel_build_sample_process(task: Any, graph_level: bool = False):
     r"""Process function for building task with parallel process.
     Args:
         task (Any): Any task module inherit BaseTask.

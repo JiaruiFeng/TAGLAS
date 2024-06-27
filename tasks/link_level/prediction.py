@@ -61,7 +61,7 @@ class SubgraphLPTask(SubgraphTask):
         sample_indexs, sample_labels, sample_label_maps, = default_labels(self.dataset, self.split)
         return sample_indexs, sample_labels, sample_label_maps
 
-    def __remove_link__(self, row, col, target_index):
+    def __remove_link__(self, row: LongTensor, col: LongTensor, target_index: LongTensor):
         i, j = target_index
         remove_ind = np.logical_or(np.logical_and(row == i, col == j), np.logical_and(row == j, col == i), )
         keep_ind = np.logical_not(remove_ind).bool()
@@ -99,7 +99,7 @@ class SubgraphTextLPTask(SubgraphTextTask):
         sample_indexs, sample_labels, sample_label_maps, = default_labels(self.dataset, self.split)
         return sample_indexs, sample_labels, sample_label_maps
 
-    def __remove_link__(self, row, col, target_index):
+    def __remove_link__(self, row: LongTensor, col: LongTensor, target_index: LongTensor):
         i, j = target_index
         remove_ind = np.logical_or(np.logical_and(row == i, col == j), np.logical_and(row == j, col == i), )
         keep_ind = np.logical_not(remove_ind).bool()

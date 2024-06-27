@@ -21,7 +21,7 @@ class LLMModel(torch.nn.Module):
     Large language model from transformers.
     """
 
-    def __init__(self, llm_name, cache_dir="./model_data/model", max_length=500):
+    def __init__(self, llm_name: str, cache_dir: str = "./model_data/model", max_length: int = 500):
         super().__init__()
         assert llm_name in LLM_DIM_DICT.keys()
         self.llm_name = llm_name

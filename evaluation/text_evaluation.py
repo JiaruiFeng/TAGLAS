@@ -28,7 +28,7 @@ class TextAccuracy(Metric):
 
     def __init__(
             self,
-            mode: Optional[str] = "exact_match",
+            mode: str = "exact_match",
             negative_match_patterns: Optional[Union[list[str], str]] = None,
             regular_patterns: Optional[Union[list[str], str]] = None,
             **kwargs):
@@ -63,7 +63,7 @@ class TextAccuracy(Metric):
         return self._regular_patterns
 
     @regular_patterns.setter
-    def regular_patterns(self, value):
+    def regular_patterns(self, value: Union[str, list[str]]):
         if value is None:
             self._regular_patterns = []
         elif isinstance(value, str):

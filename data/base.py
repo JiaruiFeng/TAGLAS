@@ -3,6 +3,7 @@ from collections import UserDict
 from typing import (
     Any,
     Union,
+    Optional,
 )
 
 
@@ -55,7 +56,7 @@ class BaseDict(UserDict, DictFunctions):
 
     def __init__(
             self,
-            data: dict = None,
+            data: Optional[dict] = None,
             **kwargs) -> None:
         super().__init__(data, **kwargs)
 
