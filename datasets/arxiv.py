@@ -38,8 +38,8 @@ class Arxiv(TAGDataset):
 
     def raw_file_names(self) -> list:
         return ["nodeidx2paperid.csv.gz", "labelidx2arxivcategeory.csv.gz", "edge.csv.gz",
-                "node_year.csv.gz", "node-feat.csv.gz", "node-label.csv.gz", "test.csv.gz",
-                "train.csv.gz", "valid.csv.gz", "titleabs.tsv", "arxiv.json"]
+                "node_year.csv.gz", "node-feat.csv.gz", "node-label.csv.gz", "train.csv.gz", "valid.csv.gz",
+                "test.csv.gz", "titleabs.tsv", "arxiv.json"]
 
     def download(self) -> None:
         _ = download_url(self.node_text_url, self.raw_dir)
