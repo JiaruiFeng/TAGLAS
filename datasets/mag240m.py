@@ -78,7 +78,7 @@ class MAG240M(TAGDataset):
         self.num_workers = num_workers
         root = (root if root is not None else ROOT)
         root = osp.join(root, self.name)
-        super(InMemoryDataset, self).__init__(root, transform, pre_transform, pre_filter, **kwargs)
+        super(InMemoryDataset, self).__init__(root, transform, pre_transform, pre_filter)
         update_dict = {}
         key_name_list = ["x", "node_map", "edge_attr", "edge_map", "edge_index", "label", "label_map", "side_data"]
         for i, path in enumerate(self.processed_paths):
