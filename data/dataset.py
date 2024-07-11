@@ -65,13 +65,13 @@ class TAGDataset(InMemoryDataset, ABC):
             features = np.array(features, dtype=object)
 
             if key == "x":
-                x = np.squeeze(features[[data.node_map]])
+                x = features[data.node_map.numpy()]
                 update_dict["x"] = x.tolist()
             elif key == "edge_attr":
-                edge_attr = np.squeeze(features[[data.edge_map]])
+                edge_attr = features[data.edge_map.numpy()]
                 update_dict["edge_attr"] = edge_attr.tolist()
             else:
-                label = np.squeeze(features[[data.label_map]])
+                label = features[data.label_map.numpy()]
                 update_dict["label"] = label.tolist()
 
         data.update(update_dict)
