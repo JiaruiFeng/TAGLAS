@@ -450,7 +450,7 @@ class DefaultTask(BaseTask):
                 selected_indexs.extend(random.choice(idx_lst) for _ in range(lb_sample_size - num_lb_sample))
         return selected_indexs
 
-    def __sampling__(self, num_samples: int, num_selected_samples: int) -> Union[Tensor, np.ndarray, list]:
+    def __sampling__(self, num_samples: int, num_selected_samples: int) -> list:
         sample_label_map = self.sample_label_map
         sample_mode = self.sample_mode
         if sample_mode != "random":
@@ -460,18 +460,20 @@ class DefaultTask(BaseTask):
                     sample_label_map = [lbs[0] for lbs in sample_label_map]
                 else:
                     print(f'Contains multiple labels per sample, use randomly sampling instead.')
+                    return self.__random_sampling__(num_samples, num_selected_samples)
 
             label_map_set = set(sample_label_map)
             num_unique_label = len(label_map_set)
             if num_unique_label > num_samples / 2:
                 print(f'Probably not the classification task, use randomly sampling instead.')
+                return self.__random_sampling__(num_samples, num_selected_samples)
+
+            if sample_mode == "balanced":
+                return self.__balanced_sampling__(sample_label_map, num_unique_label, num_selected_samples)
+            elif sample_mode == "stratified":
+                return self.__stratified_sampling__(sample_label_map, num_samples, num_selected_samples)
             else:
-                if sample_mode == "balanced":
-                    return self.__balanced_sampling__(sample_label_map, num_unique_label, num_selected_samples)
-                elif sample_mode == "stratified":
-                    return self.__stratified_sampling__(sample_label_map, num_samples, num_selected_samples)
-                else:
-                    raise ValueError(f"sample mode {sample_mode} is not supported. Please choose from random, balanced, or stratified.")
+                raise ValueError(f"sample mode {sample_mode} is not supported. Please choose from random, balanced, or stratified.")
 
         return self.__random_sampling__(num_samples, num_selected_samples)
 
@@ -782,6 +784,34 @@ class QATask(SubgraphTextTask):
     node/link level QA tasks and it is subgraph-based. In default, QA tasks are text-based.
     All texts can be converted by calling convert_text_to_embedding with desired key list.
     """
+
+    def __sampling__(self, num_samples: int, num_selected_samples: int) -> list:
+        sample_label_map = self.sample_label_map
+        sample_mode = self.sample_mode
+        sample_label_map = [label_map[1] for label_map in sample_label_map]
+        if sample_mode != "random":
+            # handle graph data which label is list of list
+            if isinstance(sample_label_map[1], list):
+                if len(sample_label_map[0]) == 1:
+                    sample_label_map = [lbs[0] for lbs in sample_label_map]
+                else:
+                    print(f'Contains multiple labels per sample, use randomly sampling instead.')
+                    return self.__random_sampling__(num_samples, num_selected_samples)
+
+            label_map_set = set(sample_label_map)
+            num_unique_label = len(label_map_set)
+            if num_unique_label > num_samples / 2:
+                print(f'Probably not the classification task, use randomly sampling instead.')
+                return self.__random_sampling__(num_samples, num_selected_samples)
+
+            if sample_mode == "balanced":
+                return self.__balanced_sampling__(sample_label_map, num_unique_label, num_selected_samples)
+            elif sample_mode == "stratified":
+                return self.__stratified_sampling__(sample_label_map, num_samples, num_selected_samples)
+            else:
+                raise ValueError(f"sample mode {sample_mode} is not supported. Please choose from random, balanced, or stratified.")
+
+        return self.__random_sampling__(num_samples, num_selected_samples)
 
     def __build_sample__(
             self,

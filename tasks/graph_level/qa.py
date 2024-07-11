@@ -14,6 +14,7 @@ from .prediction import DefaultTextGPTask
 from ..process import value_to_tensor
 
 
+
 def default_text_labels(dataset: TAGDataset, split: str, **kwargs) -> tuple[LongTensor, Tensor, list, list, list]:
     r"""Obtain graph-level question answering labels from dataset for the specified split.
     The dataset should implement get_GP_indexs_labels and get_GQA_list function.
@@ -31,6 +32,34 @@ def default_text_labels(dataset: TAGDataset, split: str, **kwargs) -> tuple[Long
 class GQATask(DefaultTextGPTask):
     r"""Graph-level question answering task.
     """
+
+    def __sampling__(self, num_samples: int, num_selected_samples: int) -> list:
+        sample_label_map = self.sample_label_map
+        sample_mode = self.sample_mode
+        sample_label_map = [label_map[1] for label_map in sample_label_map]
+        if sample_mode != "random":
+            # handle graph data which label is list of list
+            if isinstance(sample_label_map[1], list):
+                if len(sample_label_map[0]) == 1:
+                    sample_label_map = [lbs[0] for lbs in sample_label_map]
+                else:
+                    print(f'Contains multiple labels per sample, use randomly sampling instead.')
+                    return self.__random_sampling__(num_samples, num_selected_samples)
+
+            label_map_set = set(sample_label_map)
+            num_unique_label = len(label_map_set)
+            if num_unique_label > num_samples / 2:
+                print(f'Probably not the classification task, use randomly sampling instead.')
+                return self.__random_sampling__(num_samples, num_selected_samples)
+
+            if sample_mode == "balanced":
+                return self.__balanced_sampling__(sample_label_map, num_unique_label, num_selected_samples)
+            elif sample_mode == "stratified":
+                return self.__stratified_sampling__(sample_label_map, num_samples, num_selected_samples)
+            else:
+                raise ValueError(f"sample mode {sample_mode} is not supported. Please choose from random, balanced, or stratified.")
+
+        return self.__random_sampling__(num_samples, num_selected_samples)
 
     def __process_split_and_label__(self):
         sample_indexs, sample_labels, sample_label_maps, q_list, a_list = default_text_labels(self.dataset, self.split)
