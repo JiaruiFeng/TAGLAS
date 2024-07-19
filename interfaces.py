@@ -37,6 +37,7 @@ DATASET_TO_CLASS_DICT = {
     "ml1m_cls": ML1M_CLS,
     "expla_graph": ExplaGraph,
     "scene_graph": SceneGraph,
+    "wiki_graph": WikiGraph,
     "mag240m": MAG240M,
     "ultrachat200k": UltraChat200k,
 }
@@ -259,6 +260,10 @@ DATASET_INFOR_DICT = {
                             "QA": ("text_accuracy", {"metric_name": "text_accuracy"})},
             },
     "scene_graph": {"dataset": "scene_graph",
+                    "task": {"QA": GQATask},
+                    "evaluation": {"QA": ("text_accuracy", {"metric_name": "text_accuracy"})},
+                    },
+    "wiki_graph": {"dataset": "wiki_graph",
                     "task": {"QA": GQATask},
                     "evaluation": {"QA": ("text_accuracy", {"metric_name": "text_accuracy"})},
                     },
