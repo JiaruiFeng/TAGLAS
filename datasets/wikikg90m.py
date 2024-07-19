@@ -13,6 +13,7 @@ import shutil
 from TAGLAS.data import BaseDict
 from torch_geometric.data import InMemoryDataset
 from TAGLAS.data.dataset import ROOT
+from torch import Tensor
 
 
 
