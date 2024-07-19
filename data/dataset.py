@@ -62,17 +62,16 @@ class TAGDataset(InMemoryDataset, ABC):
             if key not in self._data:
                 continue
             features = getattr(self, key)
-            features = np.array(features, dtype=object)
 
             if key == "x":
-                x = features[data.node_map.numpy()]
-                update_dict["x"] = x.tolist()
+                x = [features[i] for i in data.node_map.numpy()]
+                update_dict["x"] = x
             elif key == "edge_attr":
-                edge_attr = features[data.edge_map.numpy()]
-                update_dict["edge_attr"] = edge_attr.tolist()
+                edge_attr = [features[i] for i in data.edge_map.numpy()]
+                update_dict["edge_attr"] = edge_attr
             else:
-                label = features[data.label_map.numpy()]
-                update_dict["label"] = label.tolist()
+                label = [features[i] for i in data.label_map.numpy()]
+                update_dict["label"] = label
 
         data.update(update_dict)
         return data
@@ -120,9 +119,6 @@ class TAGDataset(InMemoryDataset, ABC):
 
     def get_sample(self, idx):
         data = self[idx]
-        data.x = [self.x[i.squeeze()] for i in data.node_map]
-        data.edge_attr = [self.edge_attr[i.squeeze()] for i in data.edge_map]
-        data.label = [self.label[i.squeeze()] for i in data.label_map]
         return data
 
     @property
