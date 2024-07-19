@@ -162,3 +162,32 @@ class WikiKG90M(TAGDataset):
 
     def gen_data(self) -> tuple[list[TAGData], Any]:
         return [], None
+
+    def get_LP_indexs_labels(self, split: str = "train") -> tuple[Tensor, Tensor, list]:
+        r"""Return sample labels and their corresponding index for the link-level tasks and the given split.
+        Args:
+            split (str, optional): Split to use. Defaults to "train".
+        """
+        idxs = self.side_data.link_split[split]
+        edge_index = self.edge_index
+        labels = self.label_map[idxs]
+        label_map = labels
+        idxs = edge_index[:, idxs].transpose(0, 1)
+        return idxs, labels, label_map.tolist()
+
+    def get_LQA_list(self, label_map, **kwargs) -> tuple[list[list], np.ndarray, np.ndarray]:
+        r"""Return question and answer list for link question answering tasks.
+        Args:
+            label_map (list): Mapping to the label for all samples. Will use it to generate answer and question.
+            **kwargs: Other arguments.
+        """
+        q_list = ["What is the relationship between two target entities?"]
+        answer_list = []
+        label_features = self.label
+        for l in label_map:
+            answer_list.append(label_features[l] + ".")
+        a_list, a_idxs = np.unique(np.array(answer_list, dtype=object), return_inverse=True)
+        a_list = a_list.tolist()
+        label_map = [[0, l_idx, a_idx] for l_idx, a_idx in zip(label_map, a_idxs)]
+
+        return label_map, q_list, a_list
