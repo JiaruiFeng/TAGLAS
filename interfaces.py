@@ -39,6 +39,7 @@ DATASET_TO_CLASS_DICT = {
     "scene_graph": SceneGraph,
     "mag240m": MAG240M,
     "ultrachat200k": UltraChat200k,
+    "wikikg90m": WikiKG90M,
 }
 
 DATASET_INFOR_DICT = {
@@ -266,6 +267,15 @@ DATASET_INFOR_DICT = {
                     "task": {"QA": GQATask},
                     "evaluation": {"QA": ("text_accuracy", {"metric_name": "text_accuracy"})},
                     },
+    "wikikg90m": {"dataset": "wikikg90m",
+                 "task": {"default": DefaultLPTask,
+                          "subgraph": SubgraphLPTask,
+                          "default_text": DefaultTextLPTask,
+                          "subgraph_text": SubgraphTextLPTask,
+                          "QA": LQATask},
+                 "evaluation": {"default": ("accuracy", {"metric_name": "accuracy", "num_classes": 1387}),
+                                "QA": ("text_accuracy", {"metric_name": "text_accuracy"})},
+                 },
 }
 
 
