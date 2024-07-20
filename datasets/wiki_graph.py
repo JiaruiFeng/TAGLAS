@@ -29,7 +29,7 @@ def textualize_graph(data):
     for rel in relations:
         src = int(rel["source"])
         dst = int(rel["target"])
-        edge_attr = f'The source node is generally related to target node by the relation of {rel["general_relation"]}. Specifically, {rel["specific_relation"]}'
+        edge_attr = f'The source node {rel["general_relation"]} target node. Specifically, {rel["specific_relation"]}'
         edges.append({'src': src, 'edge_attr': edge_attr, 'dst': dst})
 
     return pd.DataFrame(nodes, columns=['node_id', 'node_attr']), pd.DataFrame(edges,
