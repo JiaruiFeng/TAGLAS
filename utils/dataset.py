@@ -30,7 +30,8 @@ def generate_link_split(edge_index: LongTensor, train_ratio: float = 0.85, test_
 
     # Sample negative edges for training and testing
     adj = edge_index_to_csr_adj(edge_index)
-    dense_adj = adj.todense() == 0
+    # Avoid self-edge in negative sampling
+    dense_adj = (adj.todense() + np.eye(adj.shape[0])) == 0
     neg_row, neg_col = np.nonzero(dense_adj)
     neg_edge_idx = np.random.permutation(len(neg_row))[: num_edges]
     neg_row, neg_col = neg_row[neg_edge_idx], neg_col[neg_edge_idx]
