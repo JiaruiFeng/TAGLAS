@@ -12,3 +12,4 @@ from .explanation_graph import ExplaGraph
 from .scene_graph import SceneGraph
 from .ultrachat200k import UltraChat200k
 from .wikikg90m import WikiKG90M
+from .wiki_graph import WikiGraph
