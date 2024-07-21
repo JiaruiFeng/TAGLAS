@@ -40,50 +40,6 @@ def get_node_text(node_raw_text):
             + node_raw_text["desc"])
     node_text_lst = text.values
     return node_text_lst.tolist()
-#
-# def get_rel_text(rel_raw_text, s2t=True):
-#     if s2t:
-#         prefix = "Relation from source entity to target entity. Relation title: "
-#     else:
-#         prefix = "Relation from target entity to source entity. Relation title: "
-#
-#     texts = []
-#     for i in range(rel_raw_text.shape[0]):
-#         text = prefix
-#         if rel_raw_text.iloc[i]["title"] is np.nan:
-#             text = text + "missing"
-#         else:
-#             text = text + rel_raw_text.iloc[i]["title"]
-#         if rel_raw_text.iloc[i]["desc"] is np.nan:
-#             text = text + ". Relation description: missing."
-#         else:
-#             text = text + ". Relation description: " + rel_raw_text.iloc[i]["desc"] + "."
-#         texts.append(text)
-#     return texts
-#
-#
-# def get_node_text(node_raw_text):
-#     texts = []
-#     for i in range(node_raw_text.shape[0]):
-#         text = "Entity in the knowledge graph. Entity name: "
-#         if node_raw_text.iloc[i]["title"] is np.nan:
-#             text = text + "missing"
-#         else:
-#             text = text + node_raw_text.iloc[i]["title"]
-#         if node_raw_text.iloc[i]["desc"] is np.nan:
-#             text = text + ". Entity description: missing."
-#         else:
-#             text = text + ". Entity description: " + node_raw_text.iloc[i]["desc"] + "."
-#         texts.append(text)
-#     return texts
-
-# def get_label_text(label_texts):
-#     label_texts = label_texts.values.tolist()
-#     labels = []
-#     for i in range(len(label_texts)):
-#         labels.append(label_texts[i] if label_texts[i] is not np.nan else "missing")
-#     return labels
-
 
 
 class WikiKG90M(TAGDataset):
