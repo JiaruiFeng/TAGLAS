@@ -17,7 +17,6 @@ from torch import Tensor
 
 
 
-
 def get_rel_text(rel_raw_text, s2t=True):
     if s2t:
         prefix = "Relation from source entity to target entity. "
@@ -31,7 +30,7 @@ def get_rel_text(rel_raw_text, s2t=True):
         + rel_raw_text["desc"]
     )
     rel_text_lst = text.values
-    return rel_text_lst
+    return rel_text_lst.tolist()
 
 
 def get_node_text(node_raw_text):
@@ -41,6 +40,50 @@ def get_node_text(node_raw_text):
             + node_raw_text["desc"])
     node_text_lst = text.values
     return node_text_lst.tolist()
+#
+# def get_rel_text(rel_raw_text, s2t=True):
+#     if s2t:
+#         prefix = "Relation from source entity to target entity. Relation title: "
+#     else:
+#         prefix = "Relation from target entity to source entity. Relation title: "
+#
+#     texts = []
+#     for i in range(rel_raw_text.shape[0]):
+#         text = prefix
+#         if rel_raw_text.iloc[i]["title"] is np.nan:
+#             text = text + "missing"
+#         else:
+#             text = text + rel_raw_text.iloc[i]["title"]
+#         if rel_raw_text.iloc[i]["desc"] is np.nan:
+#             text = text + ". Relation description: missing."
+#         else:
+#             text = text + ". Relation description: " + rel_raw_text.iloc[i]["desc"] + "."
+#         texts.append(text)
+#     return texts
+#
+#
+# def get_node_text(node_raw_text):
+#     texts = []
+#     for i in range(node_raw_text.shape[0]):
+#         text = "Entity in the knowledge graph. Entity name: "
+#         if node_raw_text.iloc[i]["title"] is np.nan:
+#             text = text + "missing"
+#         else:
+#             text = text + node_raw_text.iloc[i]["title"]
+#         if node_raw_text.iloc[i]["desc"] is np.nan:
+#             text = text + ". Entity description: missing."
+#         else:
+#             text = text + ". Entity description: " + node_raw_text.iloc[i]["desc"] + "."
+#         texts.append(text)
+#     return texts
+
+# def get_label_text(label_texts):
+#     label_texts = label_texts.values.tolist()
+#     labels = []
+#     for i in range(len(label_texts)):
+#         labels.append(label_texts[i] if label_texts[i] is not np.nan else "missing")
+#     return labels
+
 
 
 class WikiKG90M(TAGDataset):
@@ -134,10 +177,12 @@ class WikiKG90M(TAGDataset):
         edge_index = torch.tensor(edge_index).transpose(0, 1)
         edge_map = torch.tensor(edge_map)
         rel_raw_text = pd.read_csv(self.raw_paths[4], index_col=0)
+        rel_raw_text.fillna("missing", inplace=True)
         edge_attr = get_rel_text(rel_raw_text)
-        label = edge_attr
+        label = rel_raw_text["title"].values.tolist()
         label_map = edge_map
         node_raw_text = pd.read_csv(self.raw_paths[5], index_col=0)
+        node_raw_text.fillna("missing", inplace=True)
         x = get_node_text(node_raw_text)
         node_map = torch.arange(len(x))
 
@@ -186,7 +231,7 @@ class WikiKG90M(TAGDataset):
         answer_list = []
         label_features = self.label
         for l in label_map:
-            answer_list.append(label_features[l] + ".")
+            answer_list.append(str(label_features[l]) + ".")
         a_list, a_idxs = np.unique(np.array(answer_list, dtype=object), return_inverse=True)
         a_list = a_list.tolist()
         label_map = [[0, l_idx, a_idx] for l_idx, a_idx in zip(label_map, a_idxs)]
