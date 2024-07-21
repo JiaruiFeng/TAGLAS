@@ -30,7 +30,9 @@ def textualize_graph(data):
         src = int(rel["source"])
         dst = int(rel["target"])
         edge_attr = f'The source node {rel["general_relation"]} target node. Specifically, {rel["specific_relation"]}'
+        rev_edge_attr = f'The target node {rel["general_relation"]} source node. Specifically, {rel["specific_relation"]}'
         edges.append({'src': src, 'edge_attr': edge_attr, 'dst': dst})
+        edges.append({'src': dst, 'edge_attr': rev_edge_attr, 'dst': src})
 
     return pd.DataFrame(nodes, columns=['node_id', 'node_attr']), pd.DataFrame(edges,
                                                                                columns=['src', 'edge_attr', 'dst'])
