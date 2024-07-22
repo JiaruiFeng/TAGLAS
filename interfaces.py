@@ -293,7 +293,7 @@ def get_dataset(
         **kwargs) -> TAGDataset:
     return DATASET_TO_CLASS_DICT[DATASET_INFOR_DICT[name]["dataset"]](root=root, transform=transform,
                                                                       pre_transform=pre_transform,
-                                                                      pre_filter=pre_filter, kwargs=kwargs)
+                                                                      pre_filter=pre_filter, **kwargs)
 
 
 def get_datasets(names: Union[str, list[str]],
@@ -303,9 +303,9 @@ def get_datasets(names: Union[str, list[str]],
                  pre_filter: Optional[Callable] = None,
                  **kwargs) -> list[TAGDataset]:
     if isinstance(names, str):
-        return [get_dataset(names, root, transform, pre_transform, pre_filter, kwargs=kwargs)]
+        return [get_dataset(names, root, transform, pre_transform, pre_filter, **kwargs)]
     else:
-        return [get_dataset(name, root, transform, pre_transform, pre_filter, kwargs=kwargs) for name in names]
+        return [get_dataset(name, root, transform, pre_transform, pre_filter, **kwargs) for name in names]
 
 
 def get_task(

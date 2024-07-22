@@ -57,7 +57,6 @@ class BaseTask(Dataset, ABC):
         self.split = split
         self.save_data = save_data
         self.data = dataset._data
-        self.side_data = dataset.side_data
         self.save_name = save_name
         self.base_collater = Collater(None, None)
         self.post_funcs = post_funcs
@@ -87,7 +86,6 @@ class BaseTask(Dataset, ABC):
         self.__after_process__()
         # remove intermediate data for saving space.
         self.data = None
-        self.side_data = None
         self.sample_indexs = None
         self.sample_labels = None
         self.sample_label_map = None

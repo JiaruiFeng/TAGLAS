@@ -45,6 +45,7 @@ def get_node_text(node_raw_text):
 class WikiKG90M(TAGDataset):
     data_url = 'https://dgl-data.s3-accelerate.amazonaws.com/dataset/OGB-LSC/wikikg90m-v2.zip'
     mapping_url = "http://snap.stanford.edu/ogb/data/lsc/mapping/wikikg90mv2_mapping.zip"
+    graph_description = "This is a graph extracted from the entire Wikidata knowledge base. "
 
     def __init__(
             self,
@@ -54,6 +55,7 @@ class WikiKG90M(TAGDataset):
             pre_transform: Optional[Callable] = None,
             pre_filter: Optional[Callable] = None,
             to_undirected: bool = True,
+            fast_data_load: bool = False,
             **kwargs,
 
     ) -> None:
@@ -62,7 +64,8 @@ class WikiKG90M(TAGDataset):
         root = osp.join(root, self.name)
         super(InMemoryDataset, self).__init__(root, transform, pre_transform, pre_filter)
         self.to_undirected = to_undirected
-        results = self.load_data()
+        print(fast_data_load)
+        results = self.load_data(fast_data_load=fast_data_load)
         key_name_list = ["x", "edge_index", "edge_attr", "node_map", "edge_map",  "label", "label_map", "side_data"]
         update_dict = {}
         for key, value in zip(key_name_list, results):
@@ -101,61 +104,73 @@ class WikiKG90M(TAGDataset):
         extract_zip(osp.join(self.root, "wikikg90mv2_mapping.zip"), self.processed_dir)
         os.remove(mapping_path)
 
-    def load_data(self):
-        train_hrt = np.load(self.raw_paths[1])
-        valid_dict = {}
-        valid_dict['hr'] = np.load(self.raw_paths[2])
-        valid_dict['t'] = np.load(self.raw_paths[3])
-        valid_hrt = np.concatenate(
-            [valid_dict["hr"], valid_dict["t"].reshape(-1, 1)], axis=1
-        )
-        edge_index = []
-        edge_map = []
-        for triplet in train_hrt:
-            edge_index.append(
-                [
-                    triplet[0],
-                    triplet[2],
-                ]
-            )
-            edge_map.append(triplet[1])
-        num_train = len(edge_index)
-        for triplet in valid_hrt:
-            edge_index.append(
-                [
-                    triplet[0],
-                    triplet[2],
-                ]
-            )
-            edge_map.append(triplet[1])
-        num_val = len(edge_index) - num_train
-
-        edge_index = torch.tensor(edge_index).transpose(0, 1)
-        edge_map = torch.tensor(edge_map)
+    def load_data(self, fast_data_load=False):
         rel_raw_text = pd.read_csv(self.raw_paths[4], index_col=0)
         rel_raw_text.fillna("missing", inplace=True)
         edge_attr = get_rel_text(rel_raw_text)
         label = rel_raw_text["title"].values.tolist()
-        label_map = edge_map
-        node_raw_text = pd.read_csv(self.raw_paths[5], index_col=0)
-        node_raw_text.fillna("missing", inplace=True)
-        x = get_node_text(node_raw_text)
-        node_map = torch.arange(len(x))
 
-        keep_edges = torch.arange(num_train)
-        if self.to_undirected:
-            num_edges = edge_index.size(-1)
-            edge_index = torch.cat([edge_index, torch.stack([edge_index[1], edge_index[0]])], dim=-1)
-            edge_attr = edge_attr + get_rel_text(rel_raw_text, False)
-            num_edge_type = len(edge_attr)
-            edge_map = torch.cat([edge_map, edge_map + num_edge_type], dim=-1)
-            keep_edges = torch.cat([keep_edges, keep_edges + num_edges], dim=-1)
+        if fast_data_load:
+            if self.to_undirected:
+                edge_attr = edge_attr + get_rel_text(rel_raw_text, False)
+            x = None
+            node_map = None
+            edge_index = None
+            edge_map = None
+            label_map = None
+            side_data = None
+        else:
+            node_raw_text = pd.read_csv(self.raw_paths[5], index_col=0)
+            node_raw_text.fillna("missing", inplace=True)
+            x = get_node_text(node_raw_text)
+            node_map = torch.arange(len(x))
 
-        train_idx = torch.arange(num_train)
-        val_idx = torch.arange(num_train, num_val + num_train,)
+            train_hrt = np.load(self.raw_paths[1])
+            valid_dict = {}
+            valid_dict['hr'] = np.load(self.raw_paths[2])
+            valid_dict['t'] = np.load(self.raw_paths[3])
+            valid_hrt = np.concatenate(
+                [valid_dict["hr"], valid_dict["t"].reshape(-1, 1)], axis=1
+            )
+            edge_index = []
+            edge_map = []
+            for triplet in train_hrt:
+                edge_index.append(
+                    [
+                        triplet[0],
+                        triplet[2],
+                    ]
+                )
+                edge_map.append(triplet[1])
+            num_train = len(edge_index)
+            for triplet in valid_hrt:
+                edge_index.append(
+                    [
+                        triplet[0],
+                        triplet[2],
+                    ]
+                )
+                edge_map.append(triplet[1])
+            num_val = len(edge_index) - num_train
 
-        split_dict = BaseDict(train=train_idx, val=val_idx)
-        side_data = BaseDict(link_split=split_dict, keep_edges=keep_edges)
+            edge_index = torch.tensor(edge_index).transpose(0, 1)
+            edge_map = torch.tensor(edge_map)
+            label_map = edge_map
+
+            keep_edges = torch.arange(num_train)
+            if self.to_undirected:
+                num_edges = edge_index.size(-1)
+                edge_index = torch.cat([edge_index, torch.stack([edge_index[1], edge_index[0]])], dim=-1)
+                num_edge_type = len(edge_attr)
+                edge_attr = edge_attr + get_rel_text(rel_raw_text, False)
+                edge_map = torch.cat([edge_map, edge_map + num_edge_type], dim=-1)
+                keep_edges = torch.cat([keep_edges, keep_edges + num_edges], dim=-1)
+
+            train_idx = torch.arange(num_train)
+            val_idx = torch.arange(num_train, num_val + num_train,)
+
+            split_dict = BaseDict(train=train_idx, val=val_idx)
+            side_data = BaseDict(link_split=split_dict, keep_edges=keep_edges)
 
         return x, edge_index, edge_attr, node_map, edge_map, label, label_map, side_data
 
