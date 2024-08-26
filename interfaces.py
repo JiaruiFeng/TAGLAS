@@ -262,7 +262,7 @@ DATASET_INFOR_DICT = {
             },
     "scene_graph": {"dataset": "scene_graph",
                     "task": {"QA": GQATask},
-                    "evaluation": {"QA": ("text_accuracy", {"metric_name": "text_accuracy"})},
+                    "evaluation": {"QA": ("text_accuracy", {"metric_name": "text_accuracy", "mode": "search"})},
                     },
     "wiki_graph": {"dataset": "wiki_graph",
                     "task": {"QA": GQATask},
