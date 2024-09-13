@@ -37,6 +37,7 @@ DATASET_TO_CLASS_DICT = {
     "ml1m_cls": ML1M_CLS,
     "expla_graph": ExplaGraph,
     "scene_graph": SceneGraph,
+    "wiki_graph": WikiGraph,
     "mag240m": MAG240M,
     "ultrachat200k": UltraChat200k,
     "wikikg90m": WikiKG90M,
@@ -254,12 +255,17 @@ DATASET_INFOR_DICT = {
                                "QA": ("text_accuracy", {"metric_name": "text_accuracy"})},
                 },
     "expla_graph": {"dataset": "expla_graph",
-            "task": {"default_text": DefaultTextGPTask,
-                     "QA": GQATask},
-            "evaluation": {"default": ("accuracy", {"metric_name": "accuracy", "num_classes": 2}),
-                            "QA": ("text_accuracy", {"metric_name": "text_accuracy"})},
-            },
+                    "task": {"default_text": DefaultTextGPTask,
+                             "QA": GQATask},
+                    "evaluation": {"default": ("accuracy", {"metric_name": "accuracy", "num_classes": 2}),
+                                   "QA": ("text_accuracy", {"metric_name": "text_accuracy", "mode": "re",
+                                                            "regular_patterns": r"\b(Support|support|Counter|counter)\b"})},
+                    },
     "scene_graph": {"dataset": "scene_graph",
+                    "task": {"QA": GQATask},
+                    "evaluation": {"QA": ("text_accuracy", {"metric_name": "text_accuracy", "mode": "search"})},
+                    },
+    "wiki_graph": {"dataset": "wiki_graph",
                     "task": {"QA": GQATask},
                     "evaluation": {"QA": ("text_accuracy", {"metric_name": "text_accuracy"})},
                     },
@@ -288,7 +294,7 @@ def get_dataset(
         **kwargs) -> TAGDataset:
     return DATASET_TO_CLASS_DICT[DATASET_INFOR_DICT[name]["dataset"]](root=root, transform=transform,
                                                                       pre_transform=pre_transform,
-                                                                      pre_filter=pre_filter, kwargs=kwargs)
+                                                                      pre_filter=pre_filter, **kwargs)
 
 
 def get_datasets(names: Union[str, list[str]],
@@ -298,9 +304,9 @@ def get_datasets(names: Union[str, list[str]],
                  pre_filter: Optional[Callable] = None,
                  **kwargs) -> list[TAGDataset]:
     if isinstance(names, str):
-        return [get_dataset(names, root, transform, pre_transform, pre_filter, kwargs=kwargs)]
+        return [get_dataset(names, root, transform, pre_transform, pre_filter, **kwargs)]
     else:
-        return [get_dataset(name, root, transform, pre_transform, pre_filter, kwargs=kwargs) for name in names]
+        return [get_dataset(name, root, transform, pre_transform, pre_filter, **kwargs) for name in names]
 
 
 def get_task(
