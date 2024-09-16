@@ -45,7 +45,13 @@ class TAGDataset(InMemoryDataset, ABC):
         self.data = self._data.text_input_to_list()
         self.side_data = torch.load(self.processed_paths[1])
 
-
+    def _map_to_feature(self, features, feature_map):
+        if len(feature_map.shape) == 1:
+            return [features[i] for i in feature_map]
+        elif len(feature_map.shape) == 0:
+            raise ValueError("Map should be at least 1-d array")
+        else:
+            return [self._map_to_feature(features, feature_map[..., i]) for i in range(feature_map.shape[-1])]
 
     def __getitem__(self, item):
         data = super(TAGDataset, self).__getitem__(item)
@@ -64,13 +70,13 @@ class TAGDataset(InMemoryDataset, ABC):
             features = getattr(self, key)
 
             if key == "x":
-                x = [features[i] for i in data.node_map.numpy()]
+                x = self._map_to_feature(features, data.node_map.numpy())
                 update_dict["x"] = x
             elif key == "edge_attr":
-                edge_attr = [features[i] for i in data.edge_map.numpy()]
+                edge_attr = self._map_to_feature(features, data.edge_map.numpy())
                 update_dict["edge_attr"] = edge_attr
             else:
-                label = [features[i] for i in data.label_map.numpy()]
+                label = self._map_to_feature(features, data.label_map.numpy())
                 update_dict["label"] = label
 
         data.update(update_dict)
