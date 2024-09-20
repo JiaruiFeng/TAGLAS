@@ -10,6 +10,7 @@ from torch import Tensor, LongTensor
 from torch_geometric.utils import to_undirected, is_undirected
 from torch_geometric.utils.num_nodes import maybe_num_nodes
 from torch_sparse import SparseTensor, coalesce
+from torch_scatter import scatter_add
 
 
 def edge_index_to_csr_adj(
@@ -56,12 +57,49 @@ def safe_to_undirected(
         return to_undirected(edge_index, edge_attr)
 
 
+def normalize_edge_index(edge_index: Union[SparseTensor, LongTensor], N: int) -> SparseTensor:
+    if isinstance(edge_index, LongTensor):
+        row, col = edge_index[0], edge_index[1]
+    else:
+        row, col, _ = edge_index.coo()
+    value = torch.ones(len(row))
+    new_edge_index = SparseTensor(row=row, col=col, value=value, sparse_sizes=(N, N))
+    degree = new_edge_index.sum(dim=1).to_dense()
+    degree_inv = torch.pow(degree, -1)
+    value = value * degree_inv[col]
+    edge_index_normalized = SparseTensor(row=row, col=col, value=value, sparse_sizes=(N, N))
+    return edge_index_normalized
+
+
+def personalized_pagerank(edge_index: Union[SparseTensor, LongTensor],
+                          num_nodes: int,
+                          p_vector: Optional[Tensor] = None,
+                          max_iter: int = 100,
+                          tol: float = 1e-6,
+                          alpha: float = 0.85):
+    edge_index_normalized = normalize_edge_index(edge_index, num_nodes)
+    if p_vector is None:
+        p_vector = torch.ones(num_nodes, dtype=torch.float)
+    p_vector = p_vector / p_vector.sum()
+    score = torch.ones(num_nodes, dtype=torch.float) / num_nodes
+    teleport = (1 - alpha) * p_vector
+    count = 0
+    for _ in range(max_iter):
+        count += 1
+        new_score = alpha * (edge_index_normalized @ score.unsqueeze(1)).squeeze(1) + teleport
+        if torch.norm(new_score - score, p=1) < tol:
+            break
+        score = new_score
+    return score
+
+
 def sample_k_hop_subgraph_sparse(
     node_idx: Union[int, list[int], Tensor],
     num_hops: int,
     edge_index: SparseTensor,
     max_nodes_per_hop: int = -1,
-):
+    ppr_scores: Optional[Tensor] = None,
+) -> tuple[Tensor, Tensor, Tensor, Tensor]:
     if isinstance(node_idx, int):
         node_idx = torch.tensor([node_idx])
     elif isinstance(node_idx, list):
@@ -74,7 +112,13 @@ def sample_k_hop_subgraph_sparse(
         _, neighbor_idx = edge_index.sample_adj(subsets[-1], -1, replace=False)
         if max_nodes_per_hop > 0:
             if len(neighbor_idx) > max_nodes_per_hop:
-                neighbor_idx = neighbor_idx[torch.randperm(len(neighbor_idx))[:max_nodes_per_hop]]
+                if ppr_scores is None:
+                    neighbor_idx = neighbor_idx[torch.randperm(len(neighbor_idx))[:max_nodes_per_hop]]
+                else:
+                    neighbor_prob_vector = ppr_scores[neighbor_idx]
+                    neighbor_prob_vector = neighbor_prob_vector / neighbor_prob_vector.sum()
+                    neighbor_idx = neighbor_idx[torch.multinomial(neighbor_prob_vector, num_samples=max_nodes_per_hop,
+                                                                  replacement=False)]
         subsets.append(neighbor_idx)
 
     subset, inv = torch.cat(subsets).unique(return_inverse=True)
@@ -98,6 +142,7 @@ def k_hop_subgraph(
         relabel_nodes: bool = False,
         num_nodes: Optional[int] = None,
         directed: bool = False,
+        ppr_scores: Optional[Tensor] = None,
 ) -> tuple[Tensor, Tensor, Tensor, Tensor]:
     num_nodes = maybe_num_nodes(edge_index, num_nodes)
 
@@ -125,7 +170,13 @@ def k_hop_subgraph(
             fringe = col[edge_mask]
             if max_nodes_per_hop > 0:
                 if len(fringe) > max_nodes_per_hop:
-                    fringe = fringe[torch.randperm(len(fringe))[:max_nodes_per_hop]]
+                    if ppr_scores is None:
+                        fringe = fringe[torch.randperm(len(fringe))[:max_nodes_per_hop]]
+                    else:
+                        neighbor_prob_vector = ppr_scores[fringe]
+                        neighbor_prob_vector = neighbor_prob_vector / neighbor_prob_vector.sum()
+                        fringe = fringe[torch.multinomial(neighbor_prob_vector, num_samples=max_nodes_per_hop,
+                                                          replacement=False)]
             subsets.append(fringe)
 
     subset, inv = torch.cat(subsets).unique(return_inverse=True)

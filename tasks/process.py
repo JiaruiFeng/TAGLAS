@@ -71,16 +71,17 @@ def subgraph_process(
         hop: int = 3,
         max_nodes_per_hop: int = -1,
         num_nodes: Optional[int] = None,
-        to_sparse: bool = True) -> tuple[LongTensor, LongTensor, LongTensor, LongTensor]:
+        to_sparse: bool = True,
+        ppr_scores: Optional[Tensor] = None) -> tuple[LongTensor, LongTensor, LongTensor, LongTensor]:
     """generate subgraph for the input node index.
     """
     if to_sparse:
-        subset, processed_edge_index, mapping, processed_edge_map = sample_k_hop_subgraph_sparse(index, hop, edge_index,
-                                                                                                 max_nodes_per_hop)
+        subset, processed_edge_index, mapping, processed_edge_map \
+            = sample_k_hop_subgraph_sparse(index, hop, edge_index, max_nodes_per_hop, ppr_scores)
 
     else:
-        subset, processed_edge_index, mapping, edge_mask = k_hop_subgraph(index, hop, edge_index, max_nodes_per_hop,
-                                                                          relabel_nodes=True, num_nodes=num_nodes)
+        subset, processed_edge_index, mapping, edge_mask \
+            = k_hop_subgraph(index, hop, edge_index, max_nodes_per_hop, True, num_nodes, ppr_scores=ppr_scores)
         processed_edge_map = edge_map[edge_mask]
     processed_node_map = node_map[subset]
     return processed_edge_index, processed_node_map, processed_edge_map, mapping

@@ -20,7 +20,7 @@ from torch.utils.data import Dataset
 from torch_geometric.loader.dataloader import Collater
 
 from TAGLAS.data import TAGDataset, TAGData
-from TAGLAS.utils.graph import edge_index_to_sparse_csr
+from TAGLAS.utils.graph import edge_index_to_sparse_csr, personalized_pagerank
 from .process import feature_embedding_process, subgraph_process, value_to_tensor, parallel_build_sample_process
 
 
@@ -611,10 +611,13 @@ class SubgraphTask(DefaultTask):
             max_nodes_per_hop: int = 5,
             num_workers: int = 0,
             to_sparse: bool = True,
+            use_ppr_sampling: bool = False,
             **kwargs) -> None:
         self.hop = hop
         self.max_nodes_per_hop = max_nodes_per_hop
         self.num_workers = num_workers
+        self.use_ppr_sampling = use_ppr_sampling
+        self.ppr_scores = None
         self.to_sparse = to_sparse
         super().__init__(dataset, split, save_data, from_saved, save_name, post_funcs, filter_func, sample_size, sample_mode,
                          **kwargs)
@@ -636,7 +639,7 @@ class SubgraphTask(DefaultTask):
         """Extract ego-subgraph around the index.
         """
         return subgraph_process(index, edge_index, node_map, edge_map,
-                                self.hop, self.max_nodes_per_hop, to_sparse=self.to_sparse)
+                                self.hop, self.max_nodes_per_hop, to_sparse=self.to_sparse, ppr_scores=self.ppr_scores)
 
     def __build_sample__(
             self,
@@ -663,6 +666,10 @@ class SubgraphTask(DefaultTask):
         edge_map = self.data.edge_map
         if self.to_sparse:
             edge_index = edge_index_to_sparse_csr(edge_index, edge_map)
+        if self.use_ppr_sampling:
+            print("Compute ppr score.")
+            self.ppr_scores = personalized_pagerank(edge_index, len(node_map))
+            print(self.ppr_scores)
         return edge_index, node_map, edge_map
 
     def __build_task__(self):

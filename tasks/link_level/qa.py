@@ -47,7 +47,7 @@ class LQATask(QATask):
             edge_map: Tensor) -> tuple[LongTensor, LongTensor, LongTensor, LongTensor]:
         edge_index, node_map, edge_map, target_index = subgraph_process(index, edge_index, node_map, edge_map,
                                                                         self.hop, self.max_nodes_per_hop,
-                                                                        to_sparse=self.to_sparse)
+                                                                        to_sparse=self.to_sparse, ppr_scores=self.ppr_scores)
 
         # remove the current training edge.
         keep_index = self.__remove_link__(edge_index[0], edge_index[1], target_index)
