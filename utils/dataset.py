@@ -50,6 +50,45 @@ def generate_link_split(edge_index: LongTensor, train_ratio: float = 0.85, test_
     return link_split, train_pos_idx.long()
 
 
+def generate_link_split_loop(edge_index: LongTensor, train_ratio: float = 0.85, test_ratio: float = 0.10) -> tuple[dict, LongTensor]:
+    """Random split all links into train/val/test sets. Also sample the equal number of negative links for each split.
+    Used if there is no existing split for the given dataset.
+    """
+    generator = torch.manual_seed(3407)
+    num_edges = edge_index.size(1)
+    val_ratio = 1.0 - train_ratio - test_ratio
+    edge_perm = torch.randperm(num_edges, generator=generator)
+    train_offset = int(len(edge_perm) * train_ratio)
+    val_offset = int(len(edge_perm) * (train_ratio + val_ratio))
+    train_pos_idx, val_pos_idx, test_pos_idx = (
+        edge_perm[:train_offset], edge_perm[train_offset:val_offset], edge_perm[val_offset:])
+    train_pos_edges, val_pos_edges, test_pos_edges = (
+        edge_index[:, train_pos_idx], edge_index[:, val_pos_idx], edge_index[:, test_pos_idx]
+    )
+
+    # Sample negative edges for training and testing
+    adj = edge_index_to_csr_adj(edge_index)
+    n_nodes = adj.shape[0]
+    # Avoid self-edge in negative sampling
+    rand_edges = torch.randint(n_nodes, (num_edges*2, 2))
+    self_edge_mask = rand_edges[:, 0] == rand_edges[:, 1]
+    positive_mask = torch.tensor(adj[rand_edges[:,0].tolist(), rand_edges[:,1].tolist()], dtype=torch.long)
+    final_mask = torch.logical_and(torch.logical_not(self_edge_mask), torch.logical_not(positive_mask))
+    neg_edges = rand_edges[final_mask][:num_edges].T
+    train_neg_edges, val_neg_edges, test_neg_edges = (
+        neg_edges[:, :train_offset], neg_edges[:, train_offset:val_offset], neg_edges[:, val_offset:])
+    train_label, val_label, test_label = (
+        torch.zeros(train_offset * 2), torch.zeros((val_offset - train_offset) * 2),
+        torch.zeros((num_edges - val_offset) * 2))
+    train_label[: train_offset] = 1
+    val_label[: val_offset - train_offset] = 1
+    test_label[: num_edges - val_offset] = 1
+    link_split = {"train": (torch.cat([train_pos_edges, train_neg_edges], dim=-1).transpose(0, 1), train_label.long()),
+                  "val": (torch.cat([val_pos_edges, val_neg_edges], dim=-1).transpose(0, 1), val_label.long()),
+                  "test": (torch.cat([test_pos_edges, test_neg_edges], dim=-1).transpose(0, 1), test_label.long()), }
+    return link_split, train_pos_idx.long()
+
+
 def generate_sample_split(
         num_samples: int,
         label_map: Optional[Tensor] = None,

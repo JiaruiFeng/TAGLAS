@@ -17,7 +17,7 @@ from TAGLAS.constants import HF_REPO_ID
 from TAGLAS.data import TAGDataset, TAGData, BaseDict
 from TAGLAS.utils.graph import safe_to_undirected
 from TAGLAS.utils.io import download_url, extract_zip, move_files_in_dir, download_hf_file
-
+from TAGLAS.utils.dataset import generate_link_split_loop
 
 class Arxiv(TAGDataset):
     r"""Arxiv citation network dataset.
@@ -35,7 +35,7 @@ class Arxiv(TAGDataset):
                  **kwargs,
                  ) -> None:
         super().__init__(name, root, transform, pre_transform, pre_filter, **kwargs)
-
+        self.side_data.link_split, self.side_data.keep_edges = generate_link_split_loop(self._data.edge_index)
     def raw_file_names(self) -> list:
         return ["nodeidx2paperid.csv.gz", "labelidx2arxivcategeory.csv.gz", "edge.csv.gz",
                 "node_year.csv.gz", "node-feat.csv.gz", "node-label.csv.gz", "train.csv.gz", "valid.csv.gz",
@@ -101,7 +101,7 @@ class Arxiv(TAGDataset):
         ordered_desc = BaseDict()
         for i, l in enumerate(label):
             ordered_desc[l] = label_desc[i]["description"]
-
+        label = label + ["No", "Yes"]
         data = TAGData(x=x, node_map=node_map, edge_index=edge_index, edge_attr=edge_text_lst,
                        edge_map=edge_map, x_original=x_original, label=label, label_map=label_map,
                        node_year=node_year)
@@ -125,6 +125,16 @@ class Arxiv(TAGDataset):
         label_map = labels
         return indexs, labels, label_map.tolist()
 
+    def get_LP_indexs_labels(self, split: str = "train") -> tuple[Tensor, Tensor, list]:
+        r"""Return sample labels and their corresponding index for the link-level tasks and the given split.
+        Args:
+            split (str, optional): Split to use. Defaults to "train".
+        """
+        offset = 40
+        indexs, labels = self.side_data.link_split[split]
+        label_map = labels + offset
+        return indexs, labels, label_map.tolist()
+
     def get_NQA_list(self, label_map: list, **kwargs) -> tuple[list[list], np.ndarray, np.ndarray]:
         r"""Return question and answer list for node question answering tasks.
         Args:
@@ -139,5 +149,23 @@ class Arxiv(TAGDataset):
         a_list, a_idxs = np.unique(np.array(answer_list, dtype=object), return_inverse=True)
         a_list = a_list.tolist()
         label_map = [[0, l_idx, a_idx] for l_idx, a_idx in zip(label_map, a_idxs)]
+
+        return label_map, q_list, a_list
+
+    def get_LQA_list(self, label_map, **kwargs) -> tuple[list[list], np.ndarray, np.ndarray]:
+        r"""Return question and answer list for link question answering tasks.
+        Args:
+            label_map (list): Mapping to the label for all samples. Will use it to generate answer and question.
+            **kwargs: Other arguments.
+        """
+        q_list = [
+            "Is two target papers co-cited or not? Please answer yes if two papers are co-cited and no otherwise."]
+        answer_list = []
+        label_features = self.label
+        for l in label_map:
+            answer_list.append(label_features[l] + ".")
+        a_list, a_idxs = np.unique(np.array(answer_list, dtype=object), return_inverse=True)
+        a_list = a_list.tolist()
+        label_map = [(0, l_idx, a_idx) for l_idx, a_idx in zip(label_map, a_idxs)]
 
         return label_map, q_list, a_list
