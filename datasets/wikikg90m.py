@@ -116,12 +116,13 @@ class WikiKG90M(TAGDataset):
             ordered_desc[label] = desc
 
         if fast_data_load:
-
+            node_raw_text = pd.read_csv(self.raw_paths[5], index_col=0)
+            node_raw_text.fillna("missing", inplace=True)
+            x = get_node_text(node_raw_text)
+            node_map = torch.arange(len(x))
 
             if self.to_undirected:
                 edge_attr = edge_attr + get_rel_text(rel_raw_text, False)
-            x = None
-            node_map = None
             edge_index = None
             edge_map = None
             label_map = None
