@@ -159,7 +159,7 @@ class Arxiv(TAGDataset):
             **kwargs: Other arguments.
         """
         q_list = [
-            "Is two target papers co-cited or not? Please answer yes if two papers are co-cited and no otherwise."]
+            "Is two target papers have citation relationship or not? Please answer yes if two papers has citation relationship and no otherwise."]
         answer_list = []
         label_features = self.label
         for l in label_map:
