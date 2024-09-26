@@ -109,8 +109,15 @@ class WikiKG90M(TAGDataset):
         rel_raw_text.fillna("missing", inplace=True)
         edge_attr = get_rel_text(rel_raw_text)
         label = rel_raw_text["title"].values.tolist()
+        ordered_desc = BaseDict()
+        for i in range(rel_raw_text.shape[0]):
+            label = rel_raw_text.iloc[i, 0]
+            desc = rel_raw_text.iloc[i, 1]
+            ordered_desc[label] = desc
 
         if fast_data_load:
+
+
             if self.to_undirected:
                 edge_attr = edge_attr + get_rel_text(rel_raw_text, False)
             x = None
@@ -118,7 +125,7 @@ class WikiKG90M(TAGDataset):
             edge_index = None
             edge_map = None
             label_map = None
-            side_data = None
+            side_data = BaseDict(label_description=ordered_desc)
         else:
             node_raw_text = pd.read_csv(self.raw_paths[5], index_col=0)
             node_raw_text.fillna("missing", inplace=True)
@@ -170,7 +177,7 @@ class WikiKG90M(TAGDataset):
             val_idx = torch.arange(num_train, num_val + num_train,)
 
             split_dict = BaseDict(train=train_idx, val=val_idx)
-            side_data = BaseDict(link_split=split_dict, keep_edges=keep_edges)
+            side_data = BaseDict(link_split=split_dict, keep_edges=keep_edges, label_description=ordered_desc)
 
         return x, edge_index, edge_attr, node_map, edge_map, label, label_map, side_data
 

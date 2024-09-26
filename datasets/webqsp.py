@@ -12,40 +12,17 @@ import torch
 from torch import Tensor
 from tqdm import tqdm
 
-from TAGLAS.constants import HF_REPO_ID
 from TAGLAS.data import TAGDataset, TAGData, BaseDict
-from TAGLAS.utils.io import extract_zip, download_hf_file
+import datasets
 
-
-def textualize_graph(data):
-    # mapping from object id to index
-    nodes = []
-    edges = []
-    entities = data['entities']
-    relations = data['relations']
-    for nid in entities:
-        node_attr = f'This node describes {entities[nid]["name"]}. {entities[nid]["desc"]}'
-        nodes.append({'node_id': int(nid), 'node_attr': node_attr})
-    for rel in relations:
-        src = int(rel["source"])
-        dst = int(rel["target"])
-        edge_attr = f'The source node {rel["general_relation"]} target node. Specifically, {rel["specific_relation"]}'
-        rev_edge_attr = f'The target node {rel["general_relation"]} source node. Specifically, {rel["specific_relation"]}'
-        edges.append({'src': src, 'edge_attr': edge_attr, 'dst': dst})
-        edges.append({'src': dst, 'edge_attr': rev_edge_attr, 'dst': src})
-
-    return pd.DataFrame(nodes, columns=['node_id', 'node_attr']), pd.DataFrame(edges,
-                                                                               columns=['src', 'edge_attr', 'dst'])
-
-
-class WikiGraph(TAGDataset):
+class WebQSP(TAGDataset):
     r"""
-    Scene graph dataset.
+    WebQSP dataset.
     """
-    graph_description = "This is a graph generated from wiki articles. "
+    graph_description = "This is a knowledge graph generated from Wiki data. Nodes represent entities and edges represent the relationship between two entities. "
 
     def __init__(self,
-                 name: str = "wiki_graph",
+                 name: str = "webqsp",
                  root: Optional[str] = None,
                  transform: Optional[Callable] = None,
                  pre_transform: Optional[Callable] = None,
@@ -63,43 +40,58 @@ class WikiGraph(TAGDataset):
         self.data = self._data.text_input_to_list()
 
     def raw_file_names(self) -> list:
-        return ["wikiGraph.json"]
+        return ["train_sceneGraphs.json", "questions.csv", "scene_graph_split.pt"]
 
-    def download(self):
-        download_hf_file(HF_REPO_ID, subfolder="wikiGraph", filename="wikiGraph.json", local_dir=self.raw_dir)
 
     def gen_data(self) -> tuple[list[TAGData], Any]:
-        dataset = json.load(open(self.raw_paths[0]))
+        raw_datasets = datasets.load_dataset('rmanluo/RoG-webqsp')
         node_txt_list = []
         edge_txt_list = []
         question_txt_list = []
-        label_txt_list = []
         answer_txt_list = []
-        graphs = []
+        label_txt_list = []
+        graph_list = []
+        count = 0
+        for dataset in [raw_datasets["train"], raw_datasets["validation"], raw_datasets["test"]]:
+            for example in tqdm(dataset):
+                question_txt_list.append(example["question"])
+                answer = ('|').join(example['answer']).lower()
+                answer_txt_list.append(answer)
+                label_txt_list.append(answer)
+                raw_nodes = {}
+                raw_edges = []
+                for tri in example["graph"]:
+                    h, r, t = tri
+                    h = h.lower()
+                    t = t.lower()
+                    if h not in raw_nodes:
+                        raw_nodes[h] = len(raw_nodes)
+                    if t not in raw_nodes:
+                        raw_nodes[t] = len(raw_nodes)
+                    raw_edges.append({
+                        "src": raw_nodes[h],
+                        "edge_attr": r,
+                        "dst": raw_nodes[t]
+                    })
+                nodes = pd.DataFrame([{
+                    "node_id": v,
+                    "node_attr": k,
+                } for k, v in raw_nodes.items()],
+                    columns=["node_id", "node_attr"])
+                edges = pd.DataFrame(raw_edges,
+                                     columns=["src", "edge_attr", "dst"])
+                nodes.node_attr = nodes.node_attr.fillna("")
+                x = nodes.node_attr.tolist()
+                node_map = torch.arange(len(node_txt_list), len(node_txt_list) + len(x))
+                edge_attr = edges.edge_attr.tolist()
+                edge_map = torch.arange(len(edge_txt_list), len(edge_txt_list) + len(edge_attr))
+                node_txt_list.extend(x)
+                edge_txt_list.extend(edge_attr)
 
-        for i, obj in tqdm(enumerate(dataset)):
-            nodes, edges = textualize_graph(obj)
-            x = nodes.node_attr.tolist()
-            edge_attr = edges.edge_attr.tolist()
-            node_map = torch.arange(len(node_txt_list), len(node_txt_list) + len(x))
-            node_txt_list.extend(x)
-            edge_map = torch.arange(len(edge_txt_list), len(edge_txt_list) + len(edge_attr))
-            edge_txt_list.extend(edge_attr)
-            edge_index = torch.tensor([edges.src, edges.dst]).long()
+                label_map = torch.tensor([count]).long()
+                graph_list.append((nodes, edges, node_map, edge_map, label_map, label_map, label_map))
+                count += 1
 
-            question_text = ["What is your name?"]
-            question_map = torch.arange(len(question_txt_list), len(question_txt_list) + len(question_text))
-            question_txt_list.extend(question_text)
-
-            label_text = ["GOFA"]
-            label_map = torch.arange(len(label_txt_list), len(label_txt_list) + len(label_text))
-            label_txt_list.extend(label_text)
-
-            answer_text = ["My name is GOFA."]
-            answer_map = torch.arange(len(answer_txt_list), len(answer_txt_list) + len(answer_text))
-            answer_txt_list.extend(answer_text)
-
-            graphs.append((i, node_map, edge_map, edge_index, question_map, label_map, answer_map))
 
         unique_node_text, node_inverse_map = np.unique(np.array(node_txt_list, dtype=object), return_inverse=True)
         unique_edge_text, edge_inverse_map = np.unique(np.array(edge_txt_list, dtype=object), return_inverse=True)
@@ -107,6 +99,7 @@ class WikiGraph(TAGDataset):
                                                                return_inverse=True)
         unique_label_text, label_inverse_map = np.unique(np.array(label_txt_list, dtype=object), return_inverse=True)
         unique_answer_text, answer_inverse_map = np.unique(np.array(answer_txt_list, dtype=object), return_inverse=True)
+
 
         unique_node_text = unique_node_text.tolist()
         unique_edge_text = unique_edge_text.tolist()
@@ -120,24 +113,25 @@ class WikiGraph(TAGDataset):
         answer_inverse_map = torch.from_numpy(answer_inverse_map).long()
 
         data_list = []
-        id_list = []
-        for i, node_map, edge_map, edge_index, question_map_list, label_map_list, answer_map_list in graphs:
-            for question_map, label_map, answer_map in zip(question_map_list, label_map_list, answer_map_list):
-                data_list.append(
-                    TAGData(node_map=node_inverse_map[node_map],
-                            edge_index=edge_index,
-                            edge_map=edge_inverse_map[edge_map],
-                            label_map=label_inverse_map[label_map],
-                            question_map=question_inverse_map[question_map],
-                            answer_map=answer_inverse_map[answer_map]
-                            )
-                )
-                id_list.append(i)
+        for nodes, edges, node_map, edge_map, label_map, answer_map, question_map in graph_list:
+            edge_index = torch.tensor([
+                edges.src.tolist(),
+                edges.dst.tolist(),
+            ], dtype=torch.long)
 
-        id_list = torch.tensor(id_list)
-        train_idx = torch.arange(len(id_list))
-        val_idx = torch.arange(len(id_list))
-        test_idx = torch.arange(len(id_list))
+            data_list.append(
+                TAGData(node_map=node_inverse_map[node_map],
+                        edge_index=edge_index,
+                        edge_map=edge_inverse_map[edge_map],
+                        label_map=label_inverse_map[label_map],
+                        question_map=question_inverse_map[question_map],
+                        answer_map=answer_inverse_map[answer_map]
+                        )
+            )
+        train_idx = torch.arange(len(raw_datasets["train"]), dtype=torch.long)
+        val_idx = torch.arange(len(raw_datasets["validation"]), dtype=torch.long) + len(raw_datasets["train"])
+        test_idx = (torch.arange(len(raw_datasets["test"]), dtype=torch.long) + len(raw_datasets["train"])
+                    + len(raw_datasets["validation"]))
         graph_split = BaseDict(train=train_idx, val=val_idx, test=test_idx)
 
         side_data = BaseDict(graph_split=graph_split,

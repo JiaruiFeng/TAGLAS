@@ -15,7 +15,7 @@ from torch import Tensor
 from torch.utils.data import Dataset, DataLoader
 from torch_geometric.data import InMemoryDataset
 from tqdm import tqdm
-
+import json
 from TAGLAS.constants import HF_REPO_ID
 from TAGLAS.data import TAGDataset, TAGData, BaseDict
 from TAGLAS.data.dataset import ROOT
@@ -90,7 +90,7 @@ class MAG240M(TAGDataset):
     def raw_file_names(self) -> list:
         return ["meta.pt", "split_dict.pt", osp.join("mag240m_mapping", "text.csv"),
                 osp.join("processed", "paper", "node_label.npy"),
-                "mag240m_class_description.csv",
+                "mag240m.json",
                 osp.join("processed", "paper___cites___paper", "edge_index.npy")]
 
     def processed_file_names(self) -> list:
@@ -110,7 +110,7 @@ class MAG240M(TAGDataset):
         mapping_path = download_url(self.mapping_url, self.raw_dir)
         extract_zip(osp.join(self.raw_dir, "mag240m_mapping.zip"), self.raw_dir)
         os.remove(mapping_path)
-        download_hf_file(HF_REPO_ID, subfolder="mag240m", filename="mag240m_class_description.csv",
+        download_hf_file(HF_REPO_ID, subfolder="mag240m", filename="mag240m.json",
                          local_dir=self.raw_dir)
         download_hf_file(HF_REPO_ID, subfolder="mag240m", filename="new_split_dict.pt", local_dir=self.raw_dir)
 
@@ -167,12 +167,17 @@ class MAG240M(TAGDataset):
         node_split = torch.load(self.raw_paths[1])
         node_split = BaseDict(**node_split)
 
-        class_desc = pd.read_csv(self.raw_paths[-2], index_col=0)
-        label_text_list = class_desc["label_name"].tolist()
-        description = class_desc["description"].tolist()
-        label_description = BaseDict()
-        for label, description in zip(label_text_list, description):
-            label_description[label] = description
+        # additional label description.
+        with open(self.raw_paths[-1]) as f:
+            category_desc = json.load(f)
+        label_names = []
+        label_text_list = []
+        ordered_desc = BaseDict()
+        for i in range(len(category_desc)):
+            label = category_desc[i]["name"]
+            label_names.append(label)
+            desc = category_desc[i]["description"]
+            ordered_desc[label] = desc
 
         print("Saving label...")
         torch.save(label_text_list, self.processed_paths[5], pickle_protocol=4)
@@ -248,7 +253,7 @@ class MAG240M(TAGDataset):
         gc.collect()
 
         side_data = BaseDict(node_split=node_split,
-                             label_description=label_description)
+                             label_description=ordered_desc)
 
         return side_data
 

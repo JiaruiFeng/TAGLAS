@@ -41,6 +41,7 @@ DATASET_TO_CLASS_DICT = {
     "mag240m": MAG240M,
     "ultrachat200k": UltraChat200k,
     "wikikg90m": WikiKG90M,
+    "webqsp": WebQSP,
 }
 
 DATASET_INFOR_DICT = {
@@ -292,6 +293,10 @@ DATASET_INFOR_DICT = {
                  "evaluation": {"default": ("accuracy", {"metric_name": "accuracy", "num_classes": 1387}),
                                 "QA": ("text_accuracy", {"metric_name": "text_accuracy"})},
                  },
+    "webqsp": {"dataset": "webqsp",
+                    "task": {"QA": GQATask},
+                    "evaluation": {"QA": ("text_accuracy", {"metric_name": "text_accuracy", "mode": "search"})},
+                    },
 }
 
 
