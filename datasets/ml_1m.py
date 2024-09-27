@@ -35,7 +35,7 @@ class ML1M(TAGDataset):
             **kwargs,
     ) -> None:
         super().__init__(name, root, transform, pre_transform, pre_filter, **kwargs)
-        self.side_data.link_split, self.side_data.keep_edges = generate_link_split(self.edge_index)
+        self.side_data.link_split, self.side_data.keep_edges = generate_link_split(self.edge_index, labels=self._data.label_map)
 
         if to_undirected:
             self.to_undirected()
