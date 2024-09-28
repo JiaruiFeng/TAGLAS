@@ -81,15 +81,19 @@ class Products(TAGDataset):
 
         ordered_desc = BaseDict()
         labels = []
-        for i in range(len(47)):
+        for i in range(46):
             if i == 24:
                 label = "label 25"
                 labels.append(label)
                 ordered_desc[label] = "MISSING"
             else:
-                label = label_desc[i - 1]["name"]
+                if i < 24:
+                    index = i
+                else:
+                    index = i - 1
+                label = label_desc[index]["name"]
                 labels.append(label)
-                desc = label_desc[i - 1]["description"]
+                desc = label_desc[index]["description"]
                 ordered_desc[label] = desc
         labels.append("#508510")
         ordered_desc["#508510"] = "MISSING"
