@@ -131,7 +131,6 @@ class Products(TAGDataset):
         q_list = ["What is the most like category for this product?"]
         answer_list = []
         label_features = c(self.label)
-        label_features.remove("MISSING")
         for l in label_map:
             answer_list.append(label_features[l] + ".")
         a_list, a_idxs = np.unique(np.array(answer_list, dtype=object), return_inverse=True)
