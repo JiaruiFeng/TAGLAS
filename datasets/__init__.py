@@ -15,3 +15,4 @@ from .wikikg90m import WikiKG90M
 from .wiki_graph import WikiGraph
 from .webqsp import WebQSP
 from .protein_hs import ProteinHS
+from .loogle import LooGLE

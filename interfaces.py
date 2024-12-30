@@ -43,6 +43,7 @@ DATASET_TO_CLASS_DICT = {
     "wikikg90m": WikiKG90M,
     "webqsp": WebQSP,
     "protein_hs": ProteinHS,
+    "loogle": LooGLE,
 }
 
 DATASET_INFOR_DICT = {
@@ -308,6 +309,10 @@ DATASET_INFOR_DICT = {
                     "task": {"QA": GQATask},
                     "evaluation": {"QA": ("text_accuracy", {"metric_name": "text_accuracy", "mode": "search"})},
                     },
+    "loogle": {"dataset": "loogle",
+                   "task": {"QA": GQATask},
+                   "evaluation": {"QA": ("bleu", {"metric_name": "bleu"})},
+                   },
 }
 
 
